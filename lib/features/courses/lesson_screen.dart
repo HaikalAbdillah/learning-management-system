@@ -7,12 +7,12 @@ class LessonScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Materi Pembelajaran', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        title: const Text('Materi Pembelajaran'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        elevation: 1,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -25,20 +25,30 @@ class LessonScreen extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                const Icon(Icons.play_circle_fill, color: Colors.white, size: 64),
+                const Icon(
+                  Icons.play_circle_fill,
+                  color: Colors.white,
+                  size: 64,
+                ),
                 Positioned(
                   bottom: 10,
                   right: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     color: Colors.black54,
-                    child: const Text("10:25", style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      "10:25",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),
-          
+
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -50,9 +60,9 @@ class LessonScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     "Modul 1: Pengenalan",
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -64,11 +74,11 @@ class LessonScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                         Navigator.pop(context);
+                        Navigator.pop(context);
                       },
-                      child: const Text("TANDAI SELESAI"),
+                      child: const Text("Tandai Selesai"),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

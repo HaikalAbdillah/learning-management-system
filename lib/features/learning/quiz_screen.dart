@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../../config/routes.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
@@ -11,19 +12,25 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   int _currentQuestionIndex = 0;
   int _selectedOptionIndex = -1;
-  
+
   final List<Map<String, dynamic>> _questions = [
     {
       'question': 'Apa kepanjangan dari UI?',
-      'options': ['User Interface', 'User Interaction', 'User Integration', 'User Internet'],
+      'options': [
+        'User Interface',
+        'User Interaction',
+        'User Integration',
+        'User Internet',
+      ],
       'answer': 0,
     },
     {
-      'question': 'Warna apakah yang digunakan sebagai warna primer aplikasi ini?',
+      'question':
+          'Warna apakah yang digunakan sebagai warna primer aplikasi ini?',
       'options': ['Biru', 'Hijau', 'Merah', 'Kuning'],
       'answer': 2,
     },
-     {
+    {
       'question': 'Widget dasar untuk membuat layout di Flutter adalah?',
       'options': ['Div', 'Container', 'Box', 'View'],
       'answer': 1,
@@ -37,7 +44,11 @@ class _QuizScreenState extends State<QuizScreen> {
         _selectedOptionIndex = -1;
       });
     } else {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const QuizResultScreen(score: 100))); // Dummy Score
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.quizResult,
+        arguments: {'score': 100},
+      );
     }
   }
 
@@ -47,7 +58,10 @@ class _QuizScreenState extends State<QuizScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Kuis ${_currentQuestionIndex + 1}/${_questions.length}', style: TextStyle(color: Colors.black)),
+        title: Text(
+          'Kuis ${_currentQuestionIndex + 1}/${_questions.length}',
+          style: TextStyle(color: Colors.black),
+        ),
         backgroundColor: Colors.white,
         iconTheme: IconThemeData(color: Colors.black),
         elevation: 0,
@@ -79,17 +93,25 @@ class _QuizScreenState extends State<QuizScreen> {
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: _selectedOptionIndex == index ? AppTheme.primaryColor.withOpacity(0.1) : Colors.white,
+                    backgroundColor: _selectedOptionIndex == index
+                        ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                        : Colors.white,
                     side: BorderSide(
-                      color: _selectedOptionIndex == index ? AppTheme.primaryColor : Colors.grey[300]!,
+                      color: _selectedOptionIndex == index
+                          ? AppTheme.primaryColor
+                          : Colors.grey[300]!,
                       width: 2,
                     ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Text(
                     question['options'][index],
                     style: TextStyle(
-                      color: _selectedOptionIndex == index ? AppTheme.primaryColor : Colors.black87,
+                      color: _selectedOptionIndex == index
+                          ? AppTheme.primaryColor
+                          : Colors.black87,
                       fontSize: 16,
                     ),
                   ),
@@ -116,26 +138,47 @@ class QuizResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text("Hasil Kuis", style: TextStyle(color: Colors.black)), backgroundColor: Colors.white, elevation: 0, iconTheme: IconThemeData(color: Colors.black)),
+      appBar: AppBar(
+        title: const Text("Hasil Kuis", style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.emoji_events, size: 100, color: Colors.orange),
             SizedBox(height: 20),
-            Text("Selamat!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            Text("Kamu telah menyelesaikan kuis.", style: TextStyle(color: Colors.grey)),
+            Text(
+              "Selamat!",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              "Kamu telah menyelesaikan kuis.",
+              style: TextStyle(color: Colors.grey),
+            ),
             SizedBox(height: 40),
             Text("Nilai Kamu", style: TextStyle(fontSize: 18)),
-            Text("$score", style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+            Text(
+              "$score",
+              style: TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryColor,
+              ),
+            ),
             SizedBox(height: 40),
-             Padding(
-               padding: const EdgeInsets.symmetric(horizontal: 40),
-               child: SizedBox(
-                   width: double.infinity,
-                   child: ElevatedButton(onPressed: () => Navigator.pop(context), child: Text("KEMBALI KE MATERI"))
-               ),
-             )
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("KEMBALI KE MATERI"),
+                ),
+              ),
+            ),
           ],
         ),
       ),

@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import '../features/auth/splash_screen.dart';
 import '../features/auth/login_screen.dart';
-import '../features/home/main_screen.dart';
+import '../features/auth/help_screen.dart';
+import '../features/learning/class_detail_screen.dart';
+import '../features/learning/materi_detail_screen.dart';
+import '../features/home/main_navigation.dart';
+import '../features/courses/lesson_screen.dart';
+import '../features/learning/quiz_screen.dart';
+import '../features/learning/quiz_detail_screen.dart';
+import '../features/learning/quiz_play_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
   static const String home = '/home'; // Main container with BottomNav
+  static const String help = '/help';
+  static const String classDetail = '/class-detail';
+  static const String materiDetail = '/materi-detail';
+  static const String lesson = '/lesson';
+  static const String quiz = '/quiz';
+  static const String quizDetail = '/quiz-detail';
+  static const String quizPlay = '/quiz-play';
+  static const String quizResult = '/quiz-result';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -14,14 +29,44 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
+      case help:
+        return MaterialPageRoute(builder: (_) => const HelpScreen());
+      case classDetail:
+        // Extract arguments if we want to pass real data later, for now using dummy or passed args
+        final args = settings.arguments as String?;
+        return MaterialPageRoute(
+          builder: (_) => ClassDetailScreen(
+            courseTitle: args ?? "DESAIN ANTARMUKA & PENGALAMAN PENGGUNA",
+          ),
+        );
+      case materiDetail:
+        final materiData = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => MateriDetailScreen(materiData: materiData),
+        );
       case home:
-        return MaterialPageRoute(builder: (_) => const MainScreen());
+        return MaterialPageRoute(builder: (_) => const MainNavigation());
+      case lesson:
+        return MaterialPageRoute(builder: (_) => const LessonScreen());
+      case quiz:
+        return MaterialPageRoute(builder: (_) => const QuizScreen());
+      case quizDetail:
+        return MaterialPageRoute(builder: (_) => const QuizDetailScreen());
+      case quizPlay:
+        final quizData = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => QuizPlayScreen(quizData: quizData),
+        );
+      case quizResult:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final score = args?['score'] ?? 0;
+        return MaterialPageRoute(
+          builder: (_) => QuizResultScreen(score: score),
+        );
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
-            body: Center(
-              child: Text('No route defined for ${settings.name}'),
-            ),
+            body: Center(child: Text('No route defined for ${settings.name}')),
           ),
         );
     }

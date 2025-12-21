@@ -51,19 +51,12 @@ class ProfileScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppTheme.primaryColor,
-                            width: 2,
-                          ),
+                          border: Border.all(color: AppTheme.primaryColor, width: 2),
                         ),
                         child: CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.grey[200],
-                          child: const Icon(
-                            Icons.person,
-                            size: 30,
-                            color: Colors.grey,
-                          ),
+                          child: const Icon(Icons.person, size: 30, color: Colors.grey),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -81,14 +74,9 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryColor.withValues(
-                                  alpha: 0.1,
-                                ),
+                                color: AppTheme.primaryColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Text(
@@ -156,15 +144,17 @@ class ProfileScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildInfoRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.grey, fontSize: 14),
+        ),
         Text(
           value,
           style: const TextStyle(

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
-import '../../shared/widgets/course_card.dart';
 import '../../config/routes.dart';
-import 'course_detail_screen.dart';
 
 class MyClassesScreen extends StatelessWidget {
   const MyClassesScreen({super.key});
@@ -54,7 +52,8 @@ class MyClassesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildVerticalCourseCard(BuildContext context, {
+  Widget _buildVerticalCourseCard(
+    BuildContext context, {
     required String title,
     required String instructor,
     required double progress,
@@ -62,10 +61,7 @@ class MyClassesScreen extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => CourseDetailScreen(courseTitle: title)),
-        );
+        Navigator.pushNamed(context, AppRoutes.classDetail, arguments: title);
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -74,7 +70,7 @@ class MyClassesScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -87,9 +83,14 @@ class MyClassesScreen extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(16),
+                ),
               ),
-              child: const Icon(Icons.image, color: Colors.white54), // Placeholder
+              child: const Icon(
+                Icons.image,
+                color: Colors.white54,
+              ), // Placeholder
             ),
             Expanded(
               child: Padding(
@@ -107,10 +108,7 @@ class MyClassesScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       instructor,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -127,7 +125,10 @@ class MyClassesScreen extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           '${(progress * 100).toInt()}%',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),

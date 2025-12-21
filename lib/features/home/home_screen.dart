@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
-import '../../shared/widgets/course_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,162 +11,402 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Section
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 60, 24, 30),
-            decoration: const BoxDecoration(
-              color: AppTheme.primaryColor,
-              borderRadius: BorderRadius.only(
-                bottomRight: Radius.circular(30),
-              ),
-            ),
-            child: Row(
-              children: [
-                const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 40, color: AppTheme.primaryColor),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Halo, Haikal!',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Mahasiswa',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.notifications_none, color: Colors.white),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ),
-          
+          _buildHeader(),
+
           const SizedBox(height: 20),
 
           // Search Field
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              "Tugas Yang Akan Datang",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Search Field (Moved down or kept? The prompt said "retain search",
+          // but image shows "Tugas" right after header.
+          // I will put Search first as typical in apps, or maybe below header inside a container.
+          // Re-reading prompt: "pertahahkan cari pelajaran".
+          // I'll place Search between Header and Tugas for standard usability.)
           Padding(
-             padding: const EdgeInsets.symmetric(horizontal: 24),
-             child: TextField(
-               decoration: InputDecoration(
-                 hintText: "Cari pelajaran...",
-                 prefixIcon: Icon(Icons.search),
-                 fillColor: Colors.grey[200],
-                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
-                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
-                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide(color: AppTheme.primaryColor)),
-               )
-             )
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Cari pelajaran...",
+                prefixIcon: const Icon(Icons.search),
+                fillColor: Colors.grey[200],
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              ),
+            ),
           ),
 
-          const SizedBox(height: 25),
+          const SizedBox(height: 20),
 
-          // Section Title
+          // Upcoming Task Card
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: _buildUpcomingTaskCard(),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Announcements
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Kelas Saya', // "Learning Progress" or similar
+                  'Pengumuman Terakhir',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                TextButton(onPressed: () {}, child: const Text("Lihat Semua")),
+              ],
+            ),
+          ),
+          _buildAnnouncementBanner(),
+
+          const SizedBox(height: 24),
+
+          // Class Progress Title
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              "Progres Kelas",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Class Progress List
+          ListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            children: [
+              _buildProgressItem(
+                color: Colors.yellow[700]!,
+                iconText: "ui",
+                iconSub: "UX",
+                title: "DESAIN ANTARMUKA & PENGALAMAN PENGGUNA",
+                code: "D4SM-42-03 [ADY]",
+                progress: 0.6,
+              ),
+              _buildProgressItem(
+                color: Colors.red,
+                iconText: "PK",
+                iconSub: "N",
+                title: "KEWARGANEGARAAN",
+                code: "D4SM-41-GAB1 [BBO], JUMAT 2",
+                progress: 0.4,
+                isImage: true, // Assuming we simulate image with icon for now
+              ),
+              _buildProgressItem(
+                color: Colors.white,
+                iconText: "sys",
+                title: "SISTEM OPERASI",
+                code: "D4SM-44-02 [DDS]",
+                progress: 0.8,
+                isImage: true,
+              ),
+              _buildProgressItem(
+                color: Colors.cyan[200]!,
+                iconText: "",
+                title: "PEMROGRAMAN PERANGKAT BERGERAK MULTIMEDIA",
+                code: "D4SM-41-GAB1 [APJ]",
+                progress: 0.6,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Existing "Materi Terbaru"
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
+              'Materi Terbaru',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            itemCount: 2,
+            itemBuilder: (context, index) {
+              return Card(
+                elevation: 0,
+                color: Colors.white,
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey[200]!),
+                ),
+                child: ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.play_circle_fill,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  title: const Text(
+                    "Pengenalan Flutter",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  subtitle: const Text(
+                    "Mobile Programming • 15 Mins",
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
+      decoration: const BoxDecoration(
+        color: AppTheme.secondaryColor, // Darker red based on image
+        borderRadius: BorderRadius.only(
+          bottomRight: Radius.circular(
+            0,
+          ), // Removed curve to match image more closely or keep? Image doesn't show bottom clearly but likely straight or slight. adhering to previous style but with straight edges for "strip" look.
+          // Actually image shows top bar is standard rect.
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                'Halo,',
+                style: TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'HAIKAL', // Real Name
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.red[900],
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white24),
+            ),
+            child: Row(
+              children: const [
+                Text(
+                  "MAHASISWA",
                   style: TextStyle(
-                    fontSize: 18,
+                    color: Colors.white,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                TextButton(
-                  onPressed: () {}, // Navigate to My Classes tab
-                  child: const Text('Lihat Semua'),
-                ),
+                SizedBox(width: 8),
+                Icon(Icons.person, color: Colors.white, size: 16),
               ],
             ),
           ),
-          
-          const SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
 
-          // Horizontal List of Courses
-          SizedBox(
-            height: 260,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              children: [
-                CourseCard(
-                  title: 'UI/UX Design',
-                  instructor: 'Dedi Triguna, S.T., M.Kom',
-                  progress: 0.7,
-                  color: Colors.orange[100]!,
-                  imageUrl: '', // Placeholder
-                ),
-                CourseCard(
-                  title: 'Mobile Programming',
-                  instructor: 'Haikal Abdillah',
-                  progress: 0.3,
-                  color: Colors.blue[100]!,
-                  imageUrl: '', // Placeholder
-                ),
-                CourseCard(
-                  title: 'Web Development',
-                  instructor: 'Google',
-                  progress: 0.1,
-                  color: Colors.green[100]!,
-                  imageUrl: '', // Placeholder
-                ),
-              ],
+  Widget _buildUpcomingTaskCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFB71C1C), // Deep Red
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "DESAIN ANTARMUKA & PENGALAMAN PENGGUNA",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
             ),
           ),
-
-          const SizedBox(height: 25),
-
-          // "Materi Terbaru" or "Recommendations"
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: const Text(
-              'Materi Terbaru',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          const SizedBox(height: 12),
+          const Text(
+            "Tugas 01 - UID Android Mobile Game",
+            style: TextStyle(color: Colors.white, fontSize: 14),
           ),
-          
-          ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            itemCount: 3,
-            itemBuilder: (context, index) {
-              return Card(
-                elevation: 2,
-                margin: EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  leading: Container(
-                    width: 50, height: 50,
-                    decoration: BoxDecoration(color: Colors.red[50], borderRadius: BorderRadius.circular(8)),
-                    child: Icon(Icons.play_circle_fill, color: AppTheme.primaryColor),
+          const SizedBox(height: 20),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Column(
+              children: const [
+                Text(
+                  "Waktu Pengumpulan",
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                Text(
+                  "Jumat 26 Februari, 23:59 WIB",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
                   ),
-                  title: Text("Pengenalan Flutter", style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text("Mobile Programming • 15 Mins"),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
                 ),
-              );
-            }
+              ],
+            ),
           ),
-          
-          SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnnouncementBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      height: 120,
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(12),
+        // image: DecorationImage(...) // Placeholder for maintenance image
+      ),
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.construction, color: Colors.orange, size: 40),
+            SizedBox(width: 10),
+            Text(
+              "Maintenance LMS",
+              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressItem({
+    required Color color,
+    required String title,
+    required String code,
+    required double progress,
+    String iconText = "",
+    String iconSub = "",
+    bool isImage = false,
+  }) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Course Icon/Image Placeholder
+          AnimatedContainer(
+            duration: Duration(milliseconds: 500),
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: isImage
+                ? const Icon(Icons.class_, color: Colors.white54, size: 30)
+                : Stack(
+                    children: [
+                      Center(
+                        child: Text(
+                          iconText,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      if (iconSub.isNotEmpty)
+                        Positioned(
+                          bottom: 5,
+                          right: 10,
+                          child: Text(
+                            iconSub,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "2021/2",
+                  style: TextStyle(fontSize: 10, color: Colors.grey),
+                ),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  code,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: Colors.grey[300],
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "${(progress * 100).toInt()}% Selesai",
+                  style: const TextStyle(fontSize: 10, color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
