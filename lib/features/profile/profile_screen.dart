@@ -148,7 +148,7 @@ class ProfileScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text("Keluar Aplikasi"),
+                      child: const Text("Keluar"),
                     ),
                   ),
                 ],

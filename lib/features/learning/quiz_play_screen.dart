@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 
@@ -15,32 +16,80 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
   Map<int, int> userAnswers = {}; // Index Soal -> Index Jawaban
   late List<Map<String, dynamic>> questions;
 
+  Timer? _timer;
+  int _remainingTime = 900; // 15 menit in seconds
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingTime > 0) {
+        setState(() {
+          _remainingTime--;
+        });
+      } else {
+        _timer?.cancel();
+        _calculateAndShowResult();
+      }
+    });
+  }
+
+  String _formatTime(int totalSeconds) {
+    int minutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    return "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+  }
+
   // Question Repository
   final Map<String, List<Map<String, dynamic>>> questionBank = {
     'quiz1': [
       {
         'question': 'Apa fungsi utama User Interface (UI)?',
-        'options': ['Mengatur database', 'Menghubungkan user dengan sistem', 'Mengelola server', 'Menjalankan API'],
+        'options': [
+          'Mengatur database',
+          'Menghubungkan user dengan sistem',
+          'Mengelola server',
+          'Menjalankan API',
+        ],
         'answerIndex': 1,
       },
       {
         'question': 'Manakah yang termasuk elemen visual dalam UI?',
-        'options': ['Algoritma', 'Warna dan Tipografi', 'Koneksi Database', 'Struktur JSON'],
+        'options': [
+          'Algoritma',
+          'Warna dan Tipografi',
+          'Koneksi Database',
+          'Struktur JSON',
+        ],
         'answerIndex': 1,
       },
       // ... (Using just a subset here for brevity in this chunk, or include all if needed to be safe, but the instruction is to handle dynamic loading. I'll include the full list for quiz1 again plus quiz2)
       // Re-including the full list for quiz 1 to ensure no data loss
       {
         'question': 'Apa perbedaan utama UI dan UX?',
-        'options': ['UI adalah logika, UX adalah tampilan', 'UI adalah tampilan, UX adalah pengalaman', 'Tidak ada perbedaan', 'UX hanya untuk mobile'],
+        'options': [
+          'UI adalah logika, UX adalah tampilan',
+          'UI adalah tampilan, UX adalah pengalaman',
+          'Tidak ada perbedaan',
+          'UX hanya untuk mobile',
+        ],
         'answerIndex': 1,
       },
-       {
+      {
         'question': 'Prinsip desain "Consistency" berarti...',
-        'options': ['Desain harus selalu berubah', 'Elemen serupa harus terlihat dan berfungsi sama', 'Menggunakan warna sebanyak mungkin', 'Meniru aplikasi lain persis'],
+        'options': [
+          'Desain harus selalu berubah',
+          'Elemen serupa harus terlihat dan berfungsi sama',
+          'Menggunakan warna sebanyak mungkin',
+          'Meniru aplikasi lain persis',
+        ],
         'answerIndex': 1,
       },
-       {
+      {
         'question': 'Tools populer untuk desain UI/UX adalah...',
         'options': ['Visual Studio Code', 'Figma', 'Postman', 'DBeaver'],
         'answerIndex': 1,
@@ -59,59 +108,94 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
       },
       {
         'question': 'Perintah untuk membuat project baru adalah...',
-        'options': ['flutter run', 'flutter create', 'flutter build', 'flutter doctor'],
+        'options': [
+          'flutter run',
+          'flutter create',
+          'flutter build',
+          'flutter doctor',
+        ],
         'answerIndex': 1,
       },
       {
         'question': 'StatelessWidget digunakan ketika...',
-        'options': ['UI perlu berubah dinamis', 'UI statis dan tidak berubah', 'Membutuhkan animasi kompleks', 'Mengelola state global'],
+        'options': [
+          'UI perlu berubah dinamis',
+          'UI statis dan tidak berubah',
+          'Membutuhkan animasi kompleks',
+          'Mengelola state global',
+        ],
         'answerIndex': 1,
       },
       {
         'question': 'Hot Reload berfungsi untuk...',
-        'options': ['Restart aplikasi full', 'Melihat perubahan kode secara instan tanpa restart', 'Menghapus cache', 'Mengupdate database'],
+        'options': [
+          'Restart aplikasi full',
+          'Melihat perubahan kode secara instan tanpa restart',
+          'Menghapus cache',
+          'Mengupdate database',
+        ],
         'answerIndex': 1,
       },
     ],
   };
-  
+
   // Default questions if ID matches nothing
   final List<Map<String, dynamic>> defaultQuestions = [
     {
       'question': 'Contoh Soal Default?',
       'options': ['Opsi A', 'Opsi B', 'Opsi C', 'Opsi D'],
       'answerIndex': 0,
-    }
+    },
   ];
 
   @override
   void initState() {
     super.initState();
     final quizId = widget.quizData?['id'] ?? 'quiz1';
-    // Load questions based on ID, populate with full list for Quiz 1 if it was truncated above in real implementation, 
-    // but here I defined the bank. 
+    // Load questions based on ID, populate with full list for Quiz 1 if it was truncated above in real implementation,
+    // but here I defined the bank.
     // optimizing: I will put the FULL 15 questions back for quiz1 below to be safe as per user request for "banyak soal".
-    
+
     if (quizId == 'quiz1') {
-       questions = [
+      questions = [
         {
           'question': 'Apa fungsi utama User Interface (UI)?',
-          'options': ['Mengatur database', 'Menghubungkan user dengan sistem', 'Mengelola server', 'Menjalankan API'],
+          'options': [
+            'Mengatur database',
+            'Menghubungkan user dengan sistem',
+            'Mengelola server',
+            'Menjalankan API',
+          ],
           'answerIndex': 1,
         },
         {
           'question': 'Manakah yang termasuk elemen visual dalam UI?',
-          'options': ['Algoritma', 'Warna dan Tipografi', 'Koneksi Database', 'Struktur JSON'],
+          'options': [
+            'Algoritma',
+            'Warna dan Tipografi',
+            'Koneksi Database',
+            'Struktur JSON',
+          ],
           'answerIndex': 1,
         },
         {
           'question': 'Apa perbedaan utama UI dan UX?',
-          'options': ['UI adalah logika, UX adalah tampilan', 'UI adalah tampilan, UX adalah pengalaman', 'Tidak ada perbedaan', 'UX hanya untuk mobile'],
+          'options': [
+            'UI adalah logika, UX adalah tampilan',
+            'UI adalah tampilan, UX adalah pengalaman',
+            'Tidak ada perbedaan',
+            'UX hanya untuk mobile',
+          ],
           'answerIndex': 1,
         },
         {
           'question': 'Prinsip desain "Consistency" berarti...',
-          'options': ['Desain harus selalu berubah', 'Elemen serupa harus terlihat dan berfungsi sama', 'Menggunakan warna sebanyak mungkin', 'Meniru aplikasi lain persis'],
+          'options': [
+            'Desain harus selalu berubah',
+            'Elemen serupa harus terlihat dan berfungsi sama',
+            'Menggunakan warna sebanyak mungkin',
+            'Meniru aplikasi lain persis',
+          ],
           'answerIndex': 1,
         },
         {
@@ -121,58 +205,111 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
         },
         {
           'question': 'Apa itu Wireframe?',
-          'options': ['Kerangka dasar desain (low-fidelity)', 'Hasil akhir desain (high-fidelity)', 'Kode program frontend', 'Database schema'],
+          'options': [
+            'Kerangka dasar desain (low-fidelity)',
+            'Hasil akhir desain (high-fidelity)',
+            'Kode program frontend',
+            'Database schema',
+          ],
           'answerIndex': 0,
         },
         {
           'question': 'Warna "Merah" dalam UI biasanya mengindikasikan...',
-          'options': ['Sukses', 'Informasi Netral', 'Bahaya atau Error', 'Tautan/Link'],
+          'options': [
+            'Sukses',
+            'Informasi Netral',
+            'Bahaya atau Error',
+            'Tautan/Link',
+          ],
           'answerIndex': 2,
         },
         {
           'question': 'Apa tujuan dari Usability Testing?',
-          'options': ['Mencari bug pada kode', 'Menguji kemudahan penggunaan desain', 'Menguji kecepatan server', 'Menilai estetika warna'],
+          'options': [
+            'Mencari bug pada kode',
+            'Menguji kemudahan penggunaan desain',
+            'Menguji kecepatan server',
+            'Menilai estetika warna',
+          ],
           'answerIndex': 1,
         },
         {
           'question': 'Istilah "White Space" dalam desain merujuk pada...',
-          'options': ['Area kosong di sekitar elemen', 'Warna background harus putih', 'Ruang untuk iklan', 'Area yang salah desain'],
+          'options': [
+            'Area kosong di sekitar elemen',
+            'Warna background harus putih',
+            'Ruang untuk iklan',
+            'Area yang salah desain',
+          ],
           'answerIndex': 0,
         },
         {
           'question': 'Tipografi Sans-Serif biasanya memberikan kesan...',
-          'options': ['Klasik dan Tradisional', 'Modern dan Bersih', 'Rumit dan Dekoratif', 'Kuno'],
+          'options': [
+            'Klasik dan Tradisional',
+            'Modern dan Bersih',
+            'Rumit dan Dekoratif',
+            'Kuno',
+          ],
           'answerIndex': 1,
         },
         {
           'question': 'Apa itu "Responsive Design"?',
-          'options': ['Desain yang merespons suara', 'Desain yang menyesuaikan ukuran layar perangkat', 'Desain dengan animasi cepat', 'Desain statis'],
+          'options': [
+            'Desain yang merespons suara',
+            'Desain yang menyesuaikan ukuran layar perangkat',
+            'Desain dengan animasi cepat',
+            'Desain statis',
+          ],
           'answerIndex': 1,
         },
         {
-          'question': 'Ukuran target sentuh minimal yang disarankan untuk mobile adalah...',
-          'options': ['10x10 px', '20x20 px', '44x44 px (atau 48dp)', '100x100 px'],
+          'question':
+              'Ukuran target sentuh minimal yang disarankan untuk mobile adalah...',
+          'options': [
+            '10x10 px',
+            '20x20 px',
+            '44x44 px (atau 48dp)',
+            '100x100 px',
+          ],
           'answerIndex': 2,
         },
         {
           'question': 'Hukum "Hick\'s Law" menyatakan bahwa...',
-          'options': ['Warna mempengaruhi emosi', 'Waktu, keputusan meningkat dengan banyaknya pilihan', 'Pengguna tidak membaca, mereka memindai', 'Jarak target mempengaruhi waktu gerak'],
+          'options': [
+            'Warna mempengaruhi emosi',
+            'Waktu, keputusan meningkat dengan banyaknya pilihan',
+            'Pengguna tidak membaca, mereka memindai',
+            'Jarak target mempengaruhi waktu gerak',
+          ],
           'answerIndex': 1,
         },
         {
           'question': 'Prototyping fase "High-Fidelity" berarti...',
-          'options': ['Sketsa kasar di kertas', 'Desain yang sangat mirip produk akhir', 'Hanya struktur wireframe', 'Diagram alur pengguna'],
+          'options': [
+            'Sketsa kasar di kertas',
+            'Desain yang sangat mirip produk akhir',
+            'Hanya struktur wireframe',
+            'Diagram alur pengguna',
+          ],
           'answerIndex': 1,
         },
         {
           'question': 'Call to Action (CTA) button sebaiknya...',
-          'options': ['Tersembunyi', 'Berwarna pudar', 'Menonjol dan jelas', 'Sama dengan teks biasa', 'Tidak perlu ada'],
+          'options': [
+            'Tersembunyi',
+            'Berwarna pudar',
+            'Menonjol dan jelas',
+            'Sama dengan teks biasa',
+            'Tidak perlu ada',
+          ],
           'answerIndex': 2,
         },
       ];
     } else {
       questions = questionBank[quizId] ?? defaultQuestions;
     }
+    _startTimer();
   }
 
   @override
@@ -199,18 +336,18 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
               ),
             ),
             Row(
-              children: const [
-                 Icon(Icons.timer_outlined, color: Colors.white, size: 20),
-                 SizedBox(width: 4),
-                 Text(
-                   "15:00",
-                   style: TextStyle(
-                     color: Colors.white, 
-                     fontWeight: FontWeight.bold
-                   ),
-                 ),
+              children: [
+                Icon(Icons.timer_outlined, color: Colors.white, size: 20),
+                SizedBox(width: 4),
+                Text(
+                  _formatTime(_remainingTime),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
-            )
+            ),
           ],
         ),
         backgroundColor: AppTheme.primaryColor,
@@ -234,11 +371,11 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
               itemCount: totalQuestions,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 final isCurrent = index == currentQuestionIndex;
-                final isAnswered = userAnswers.containsKey(index);
-                
+                final color = _getQuestionColor(index);
+
                 return GestureDetector(
                   onTap: () {
                     setState(() {
@@ -246,28 +383,27 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                     });
                   },
                   child: Container(
-                    width: 36,
-                    height: 36,
+                    width: isCurrent
+                        ? 40
+                        : 36, // Sedikit lebih besar jika aktif
+                    height: isCurrent ? 40 : 36,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isCurrent 
-                          ? AppTheme.primaryColor 
-                          : (isAnswered ? Colors.green : Colors.white),
-                      border: Border.all(
-                        color: isCurrent || isAnswered 
-                            ? Colors.transparent 
-                            : Colors.grey[400]!,
-                      ),
+                      color: color,
+                      border: isCurrent
+                          ? Border.all(color: Colors.black, width: 2)
+                          : null,
+                      boxShadow: isCurrent
+                          ? [BoxShadow(color: Colors.black26, blurRadius: 4)]
+                          : null,
                     ),
                     child: Text(
                       "${index + 1}",
                       style: TextStyle(
-                        color: isCurrent || isAnswered 
-                            ? Colors.white 
-                            : Colors.grey[600],
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                        fontSize: isCurrent ? 14 : 12,
                       ),
                     ),
                   ),
@@ -291,48 +427,54 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Question Text
                   Text(
                     currentQ['question'],
                     style: const TextStyle(
-                      fontSize: 16, // Sedikit lebih kecil agar muat banyak teks jika panjang
+                      fontSize:
+                          16, // Sedikit lebih kecil agar muat banyak teks jika panjang
                       height: 1.5,
                       color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Options
                   ...List.generate(currentQ['options'].length, (optIndex) {
-                    final isSelected = userAnswers[currentQuestionIndex] == optIndex;
+                    final isSelected =
+                        userAnswers[currentQuestionIndex] == optIndex;
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        color: isSelected 
-                            ? AppTheme.primaryColor.withOpacity(0.1) 
+                        color: isSelected
+                            ? AppTheme.primaryColor.withValues(alpha: 0.1)
                             : Colors.grey[50],
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                          color: isSelected
+                              ? AppTheme.primaryColor
+                              : Colors.transparent,
                         ),
                       ),
                       child: RadioListTile<int>(
                         value: optIndex,
+                        // ignore: deprecated_member_use
                         groupValue: userAnswers[currentQuestionIndex],
                         activeColor: AppTheme.primaryColor,
                         title: Text(
                           currentQ['options'][optIndex],
                           style: TextStyle(
                             fontSize: 14,
-                            color: isSelected 
-                                ? AppTheme.primaryColor 
+                            color: isSelected
+                                ? AppTheme.primaryColor
                                 : Colors.black87,
-                            fontWeight: isSelected 
-                                ? FontWeight.bold 
+                            fontWeight: isSelected
+                                ? FontWeight.bold
                                 : FontWeight.normal,
                           ),
                         ),
+                        // ignore: deprecated_member_use
                         onChanged: (val) {
                           setState(() {
                             userAnswers[currentQuestionIndex] = val!;
@@ -356,7 +498,7 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                   color: Colors.black.withValues(alpha: 0.05),
                   offset: const Offset(0, -4),
                   blurRadius: 10,
-                )
+                ),
               ],
             ),
             child: Row(
@@ -367,19 +509,21 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                   OutlinedButton(
                     onPressed: () {
                       setState(() {
-                         currentQuestionIndex--;
+                        currentQuestionIndex--;
                       });
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.black54,
                       side: const BorderSide(color: Colors.black12),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
                     ),
                     child: const Text("Soal Sebelumnya"),
                   )
                 else
-                   const SizedBox(width: 10), // Placeholder agar layout seimbang
-
+                  const SizedBox(width: 10), // Placeholder agar layout seimbang
                 // Tombol Selanjutnya / Selesai
                 ElevatedButton(
                   onPressed: () {
@@ -392,17 +536,23 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: currentQuestionIndex == totalQuestions - 1 
-                        ? Colors.green 
+                    backgroundColor: currentQuestionIndex == totalQuestions - 1
+                        ? Colors.green
                         : AppTheme.primaryColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                     elevation: 0,
                   ),
                   child: Text(
-                    currentQuestionIndex == totalQuestions - 1 
-                        ? "Selesai" 
+                    currentQuestionIndex == totalQuestions - 1
+                        ? "Selesai"
                         : "Soal Selanjutnya",
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -411,6 +561,21 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
         ],
       ),
     );
+  }
+
+  Color _getQuestionColor(int index) {
+    if (!userAnswers.containsKey(index)) {
+      return Colors.grey; // Belum dijawab
+    }
+
+    final int selected = userAnswers[index]!;
+    final int correct = questions[index]['answerIndex'];
+
+    if (selected == correct) {
+      return Colors.green; // Jawaban Benar
+    } else {
+      return Colors.red; // Jawaban Salah
+    }
   }
 
   void _calculateAndShowResult() {
@@ -428,7 +593,9 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -436,10 +603,14 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: score >= 70 ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                  color: score >= 70
+                      ? Colors.green.withValues(alpha: 0.1)
+                      : Colors.red.withValues(alpha: 0.1),
                 ),
                 child: Icon(
-                  score >= 70 ? Icons.emoji_events : Icons.warning_amber_rounded,
+                  score >= 70
+                      ? Icons.emoji_events
+                      : Icons.warning_amber_rounded,
                   size: 48,
                   color: score >= 70 ? Colors.green : Colors.red,
                 ),
@@ -452,7 +623,11 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
               const SizedBox(height: 8),
               Text(
                 "Nilai Kamu: ${score.toStringAsFixed(0)}",
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -467,8 +642,13 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
                     Navigator.pop(context); // Close Dialog
                     Navigator.pop(context); // Close Screen
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
-                  child: const Text("Tutup", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                  ),
+                  child: const Text(
+                    "Tutup",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],

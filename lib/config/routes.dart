@@ -32,11 +32,10 @@ class AppRoutes {
       case help:
         return MaterialPageRoute(builder: (_) => const HelpScreen());
       case classDetail:
-        // Extract arguments if we want to pass real data later, for now using dummy or passed args
-        final args = settings.arguments as String?;
+        final classId = settings.arguments as int? ?? 1; // Default to 1 if null
         return MaterialPageRoute(
           builder: (_) => ClassDetailScreen(
-            courseTitle: args ?? "DESAIN ANTARMUKA & PENGALAMAN PENGGUNA",
+            classId: classId,
           ),
         );
       case materiDetail:

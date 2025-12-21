@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../../services/class_repository.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -86,44 +87,34 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 10),
 
           // Class Progress List
-          ListView(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            children: [
-              _buildProgressItem(
-                color: Colors.yellow[700]!,
-                iconText: "ui",
-                iconSub: "UX",
-                title: "DESAIN ANTARMUKA & PENGALAMAN PENGGUNA",
-                code: "D4SM-42-03 [ADY]",
-                progress: 0.6,
-              ),
-              _buildProgressItem(
-                color: Colors.red,
-                iconText: "PK",
-                iconSub: "N",
-                title: "KEWARGANEGARAAN",
-                code: "D4SM-41-GAB1 [BBO], JUMAT 2",
-                progress: 0.4,
-                isImage: true, // Assuming we simulate image with icon for now
-              ),
-              _buildProgressItem(
-                color: Colors.white,
-                iconText: "sys",
-                title: "SISTEM OPERASI",
-                code: "D4SM-44-02 [DDS]",
-                progress: 0.8,
-                isImage: true,
-              ),
-              _buildProgressItem(
-                color: Colors.cyan[200]!,
-                iconText: "",
-                title: "PEMROGRAMAN PERANGKAT BERGERAK MULTIMEDIA",
-                code: "D4SM-41-GAB1 [APJ]",
-                progress: 0.6,
-              ),
-            ],
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: ClassRepository.classes.length,
+              itemBuilder: (context, index) {
+                final cls = ClassRepository.classes[index];
+                return GestureDetector(
+                  onTap: () {
+                    // Pass ID to detail screen
+                    Navigator.pushNamed(
+                      context,
+                      '/class-detail',
+                      arguments: cls['id'],
+                    );
+                  },
+                  child: _buildProgressItem(
+                    color: cls['color'],
+                    title: cls['title'],
+                    code: cls['code'] ?? "", // Added code to repository
+                    progress: cls['progress'],
+                    iconText: cls['title'][0], // Simple icon logic
+                    isImage: false, // For now simple
+                  ),
+                );
+              },
+            ),
           ),
 
           const SizedBox(height: 24),

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
+import '../../services/class_repository.dart';
 
 enum ContentType { lesson, quiz, assignment }
 
 class ClassDetailScreen extends StatefulWidget {
-  final String courseTitle;
+  final int classId;
 
   const ClassDetailScreen({
     super.key,
-    this.courseTitle = "DESAIN ANTARMUKA & PENGALAMAN PENGGUNA",
+    required this.classId,
   });
 
   @override
@@ -20,97 +21,27 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Data untuk Tab Materi - UI Design
-  final List<Map<String, dynamic>> uiDesignMateri = [
-    {
-      'id': '1',
-      'badgeText': 'Pertemuan 1',
-      'badgeColor': Colors.blue,
-      'title': '01 - Pengantar User Interface Design',
-      'description': '3 URLs, 2 Files, 3 Interactive Content',
-      'isCompleted': true,
-      'contentType': ContentType.lesson,
-      'type': 'ui_design',
-    },
-    {
-      'id': '2',
-      'badgeText': 'Pertemuan 2',
-      'badgeColor': Colors.blue,
-      'title': '02 - User Experience',
-      'description': '2 URLs, 1 Files',
-      'isCompleted': true,
-      'contentType': ContentType.lesson,
-      'type': 'ui_design',
-    },
-    {
-      'id': '3',
-      'badgeText': 'Pertemuan 3',
-      'badgeColor': Colors.blue,
-      'title': '03 - Prototyping',
-      'description': '4 URLs, 1 Files',
-      'isCompleted': false,
-      'contentType': ContentType.lesson,
-      'type': 'ui_design',
-    },
-  ];
+  late Map<String, dynamic> classData;
+  List<Map<String, dynamic>> materiList = [];
 
-  // Data untuk Tab Materi - Mobile Programming
-  final List<Map<String, dynamic>> mobileProgrammingMateri = [
-    {
-      'id': 'm1',
-      'badgeText': 'Pertemuan 1',
-      'badgeColor': Colors.orange,
-      'title': '01 - Pengantar Flutter',
-      'description': 'Video & Modul',
-      'isCompleted': true,
-      'contentType': ContentType.lesson,
-      'type': 'mobile_programming',
-    },
-    {
-      'id': 'm2',
-      'badgeText': 'Pertemuan 2',
-      'badgeColor': Colors.orange,
-      'title': '02 - Dasar Mobile Programming',
-      'description': 'Source Code & Quiz',
-      'isCompleted': false,
-      'contentType': ContentType.lesson,
-      'type': 'mobile_programming',
-    },
-  ];
-
-  // Data untuk Tab Materi - Web Programming
-  final List<Map<String, dynamic>> webProgrammingMateri = [
-    {
-      'id': 'w1',
-      'badgeText': 'Pertemuan 1',
-      'badgeColor': Colors.purple,
-      'title': '01 - Pengantar Web Development',
-      'description': 'HTML & CSS Basics',
-      'isCompleted': true,
-      'contentType': ContentType.lesson,
-      'type': 'web_programming',
-    },
-    {
-      'id': 'w2',
-      'badgeText': 'Pertemuan 2',
-      'badgeColor': Colors.purple,
-      'title': '02 - JavaScript Fundamentals',
-      'description': 'Interactive Logic',
-      'isCompleted': false,
-      'contentType': ContentType.lesson,
-      'type': 'web_programming',
-    },
-  ];
-
-  List<Map<String, dynamic>> get currentMateriList {
-    final title = widget.courseTitle.toLowerCase();
-    if (title.contains('mobile')) {
-      return mobileProgrammingMateri;
-    } else if (title.contains('web')) {
-      return webProgrammingMateri;
-    } else {
-      // Default to UI Design (or logic for specific title)
-      return uiDesignMateri;
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    
+    // Fetch data based on ID
+    try {
+      classData = ClassRepository.classes.firstWhere(
+        (e) => e['id'] == widget.classId
+      );
+      materiList = List<Map<String, dynamic>>.from(classData['materi']);
+    } catch (e) {
+      // Fallback or error handling
+      classData = {
+        'title': 'Kelas Tidak Ditemukan',
+        'code': '-',
+        'instructor': '-',
+      };
     }
   }
 
@@ -151,11 +82,8 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
     },
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
+  // InitState removed here as it is moved up
+
 
   @override
   void dispose() {
@@ -177,7 +105,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.courseTitle,
+              classData['title'] ?? "Course",
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -186,9 +114,9 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const Text(
-              "D4SM-42-03 [ADY]",
-              style: TextStyle(color: Colors.white70, fontSize: 12),
+             Text(
+               "${classData['code']} [${classData['instructor']}]",
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
         ),
@@ -213,7 +141,8 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
   }
 
   Widget _buildMateriTab() {
-    final materiList = currentMateriList;
+    // materiList is now populated in initState
+
 
     return materiList.isEmpty
         ? _buildEmptyState(

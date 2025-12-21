@@ -19,17 +19,28 @@ class UIDesignContent extends StatelessWidget {
           const SizedBox(height: 20),
           _buildSectionTitle('Prinsip Desain Utama'),
           const SizedBox(height: 10),
-          _buildPrincipleItem('1. Kejelasan (Clarity)', 'Desain harus mudah dipahami.'),
-          _buildPrincipleItem('2. Konsistensi (Consistency)', 'Elemen desain harus seragam.'),
-          _buildPrincipleItem('3. Responsivitas (Responsiveness)', 'Desain harus bekerja di berbagai ukuran layar.'),
+          _buildPrincipleItem(
+            '1. Kejelasan (Clarity)',
+            'Desain harus mudah dipahami.',
+          ),
+          _buildPrincipleItem(
+            '2. Konsistensi (Consistency)',
+            'Elemen desain harus seragam.',
+          ),
+          _buildPrincipleItem(
+            '3. Responsivitas (Responsiveness)',
+            'Desain harus bekerja di berbagai ukuran layar.',
+          ),
           const SizedBox(height: 20),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withAlpha(25), // 0.1 * 255 ≈ 25
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.withOpacity(0.3)),
+              border: Border.all(
+                color: Colors.blue.withAlpha(77),
+              ), // 0.3 * 255 ≈ 77
             ),
             child: Column(
               children: [
@@ -37,7 +48,10 @@ class UIDesignContent extends StatelessWidget {
                 const SizedBox(height: 10),
                 const Text(
                   'Ilustrasi UI Design',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
                 ),
                 const SizedBox(height: 5),
                 Text(

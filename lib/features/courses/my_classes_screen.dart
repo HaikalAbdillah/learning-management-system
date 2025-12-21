@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
+import '../../services/class_repository.dart';
 
 class MyClassesScreen extends StatelessWidget {
   const MyClassesScreen({super.key});
@@ -18,42 +19,23 @@ class MyClassesScreen extends StatelessWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: [
-          _buildVerticalCourseCard(
+        children: ClassRepository.classes.map((cls) {
+          return _buildVerticalCourseCard(
             context,
-            title: 'UI/UX Design',
-            instructor: 'Dedi Triguna, S.T., M.Kom',
-            progress: 0.7,
-            color: Colors.orange[100]!,
-          ),
-          _buildVerticalCourseCard(
-            context,
-            title: 'Mobile Programming',
-            instructor: 'Haikal Abdillah',
-            progress: 0.3,
-            color: Colors.blue[100]!,
-          ),
-          _buildVerticalCourseCard(
-            context,
-            title: 'Web Development',
-            instructor: 'Google',
-            progress: 0.1,
-            color: Colors.green[100]!,
-          ),
-          _buildVerticalCourseCard(
-            context,
-            title: 'Data Science',
-            instructor: 'Andrew Ng',
-            progress: 0.0,
-            color: Colors.purple[100]!,
-          ),
-        ],
+            id: cls['id'],
+            title: cls['title'],
+            instructor: cls['instructor'],
+            progress: cls['progress'],
+            color: cls['color'].withOpacity(0.3), // Lighter bg
+          );
+        }).toList(),
       ),
     );
   }
 
   Widget _buildVerticalCourseCard(
     BuildContext context, {
+    required int id,
     required String title,
     required String instructor,
     required double progress,
@@ -61,7 +43,7 @@ class MyClassesScreen extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, AppRoutes.classDetail, arguments: title);
+        Navigator.pushNamed(context, AppRoutes.classDetail, arguments: id);
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),

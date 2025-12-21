@@ -21,7 +21,11 @@ class WebProgrammingContent extends StatelessWidget {
           const SizedBox(height: 10),
           _buildTechItem('HTML', 'Struktur halaman web', Colors.orange),
           _buildTechItem('CSS', 'Desain dan tata letak', Colors.blue),
-          _buildTechItem('JavaScript', 'Logika Interaktif', Colors.yellow[700]!),
+          _buildTechItem(
+            'JavaScript',
+            'Logika Interaktif',
+            Colors.yellow[700]!,
+          ),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(16),
@@ -75,7 +79,7 @@ class WebProgrammingContent extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: color.withOpacity(0.2),
+            backgroundColor: color.withAlpha((0.2 * 255).round()),
             child: Text(
               title[0],
               style: TextStyle(
