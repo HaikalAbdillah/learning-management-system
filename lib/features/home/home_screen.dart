@@ -72,7 +72,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          _buildAnnouncementBanner(),
+          _buildAnnouncementBanner(context),
 
           const SizedBox(height: 24),
 
@@ -127,12 +127,23 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
-          ListView.builder(
+            ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            itemCount: 2,
+            itemCount: ClassRepository.classes.expand((c) => c['materi'] as List).take(3).length, 
             itemBuilder: (context, index) {
+              // Flatten all materials from all classes to show "Recent"
+              // In a real app this would be sorted by date
+              final allMaterials = ClassRepository.classes
+                  .expand((c) => (c['materi'] as List).map((m) => {
+                        ...m as Map<String, dynamic>,
+                        'courseName': c['title'], // Add course name context
+                      }))
+                  .toList();
+              
+              final material = allMaterials[index];
+
               return Card(
                 elevation: 0,
                 color: Colors.white,
@@ -142,6 +153,13 @@ class HomeScreen extends StatelessWidget {
                   side: BorderSide(color: Colors.grey[200]!),
                 ),
                 child: ListTile(
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context, 
+                      '/materi-detail', 
+                      arguments: material,
+                    );
+                  },
                   leading: Container(
                     width: 40,
                     height: 40,
@@ -154,13 +172,17 @@ class HomeScreen extends StatelessWidget {
                       color: AppTheme.primaryColor,
                     ),
                   ),
-                  title: const Text(
-                    "Pengenalan Flutter",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  title: Text(
+                    material['title'],
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  subtitle: const Text(
-                    "Mobile Programming • 15 Mins",
-                    style: TextStyle(fontSize: 12),
+                  subtitle: Text(
+                    "${material['courseName']}",
+                    style: const TextStyle(fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 14),
                 ),
@@ -282,26 +304,59 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAnnouncementBanner() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      height: 120,
-      decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(12),
-        // image: DecorationImage(...) // Placeholder for maintenance image
-      ),
-      child: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.construction, color: Colors.orange, size: 40),
-            SizedBox(width: 10),
-            Text(
-              "Maintenance LMS",
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-            ),
-          ],
+  Widget _buildAnnouncementBanner(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/announcement-detail');
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 24),
+        height: 120,
+        decoration: BoxDecoration(
+          color: Colors.blue[50], // Light blue bg
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Placeholder for the illustration in the image
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                   Icon(Icons.settings, color: Colors.orange[300], size: 40),
+                   Positioned(
+                     bottom: 0,
+                     right: 0,
+                     child: Icon(Icons.warning, color: Colors.orange, size: 20),
+                   ),
+                ],
+              ),
+              const SizedBox(width: 16),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    "Maintenance LMS",
+                    style: TextStyle(
+                      color: Color(0xFFC62828), // Dark red title
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Sabtu 12 Juni 2021",
+                    style: TextStyle(
+                      color: Colors.blueGrey,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

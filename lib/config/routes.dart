@@ -9,6 +9,7 @@ import '../features/courses/lesson_screen.dart';
 import '../features/learning/quiz_screen.dart';
 import '../features/learning/quiz_detail_screen.dart';
 import '../features/learning/quiz_play_screen.dart';
+import '../features/home/announcement_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -22,6 +23,7 @@ class AppRoutes {
   static const String quizDetail = '/quiz-detail';
   static const String quizPlay = '/quiz-play';
   static const String quizResult = '/quiz-result';
+  static const String announcementDetail = '/announcement-detail';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -34,9 +36,7 @@ class AppRoutes {
       case classDetail:
         final classId = settings.arguments as int? ?? 1; // Default to 1 if null
         return MaterialPageRoute(
-          builder: (_) => ClassDetailScreen(
-            classId: classId,
-          ),
+          builder: (_) => ClassDetailScreen(classId: classId),
         );
       case materiDetail:
         final materiData = settings.arguments as Map<String, dynamic>?;
@@ -62,6 +62,8 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => QuizResultScreen(score: score),
         );
+      case announcementDetail:
+        return MaterialPageRoute(builder: (_) => const AnnouncementScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
