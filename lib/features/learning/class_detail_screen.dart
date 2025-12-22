@@ -8,10 +8,7 @@ enum ContentType { lesson, quiz, assignment }
 class ClassDetailScreen extends StatefulWidget {
   final int classId;
 
-  const ClassDetailScreen({
-    super.key,
-    required this.classId,
-  });
+  const ClassDetailScreen({super.key, required this.classId});
 
   @override
   State<ClassDetailScreen> createState() => _ClassDetailScreenState();
@@ -28,13 +25,13 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     // Fetch data based on ID
     try {
       classData = ClassRepository.classes.firstWhere(
-        (e) => e['id'] == widget.classId
+        (e) => e['id'] == widget.classId,
       );
-      materiList = List<Map<String, dynamic>>.from(classData['materi']);
+      materiList = List<Map<String, dynamic>>.from(classData['materi'] ?? []);
     } catch (e) {
       // Fallback or error handling
       classData = {
@@ -42,6 +39,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
         'code': '-',
         'instructor': '-',
       };
+      materiList = [];
     }
   }
 
@@ -84,7 +82,6 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
 
   // InitState removed here as it is moved up
 
-
   @override
   void dispose() {
     _tabController.dispose();
@@ -114,8 +111,8 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-             Text(
-               "${classData['code']} [${classData['instructor']}]",
+            Text(
+              "${classData['code']} [${classData['instructor']}]",
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
@@ -142,7 +139,6 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
 
   Widget _buildMateriTab() {
     // materiList is now populated in initState
-
 
     return materiList.isEmpty
         ? _buildEmptyState(

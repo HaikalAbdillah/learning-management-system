@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/app_theme.dart';
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
@@ -11,18 +12,39 @@ class NotificationScreen extends StatelessWidget {
         title: const Text(
           'Notifikasi',
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: const [
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Colors.white24,
+                    child: Icon(Icons.person, size: 16, color: Colors.white),
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    'Mahasiswa',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),

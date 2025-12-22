@@ -16,6 +16,30 @@ class MyClassesScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
+        actions: [
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: const [
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Colors.white24,
+                    child: Icon(Icons.person, size: 16, color: Colors.white),
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    'Mahasiswa',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

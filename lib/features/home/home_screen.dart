@@ -12,25 +12,11 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Section
-          _buildHeader(),
+          _buildHeader(context),
 
           const SizedBox(height: 20),
 
           // Search Field
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              "Tugas Yang Akan Datang",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // Search Field (Moved down or kept? The prompt said "retain search",
-          // but image shows "Tugas" right after header.
-          // I will put Search first as typical in apps, or maybe below header inside a container.
-          // Re-reading prompt: "pertahahkan cari pelajaran".
-          // I'll place Search between Header and Tugas for standard usability.)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: TextField(
@@ -50,6 +36,17 @@ class HomeScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
 
+          // Upcoming Tasks Text
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              "Tugas Yang Akan Datang",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
           // Upcoming Task Card
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -68,7 +65,12 @@ class HomeScreen extends StatelessWidget {
                   'Pengumuman Terakhir',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                TextButton(onPressed: () {}, child: const Text("Lihat Semua")),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/announcement-list');
+                  },
+                  child: const Text("Lihat Semua"),
+                ),
               ],
             ),
           ),
@@ -127,21 +129,28 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
-            ListView.builder(
+          ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            itemCount: ClassRepository.classes.expand((c) => c['materi'] as List).take(3).length, 
+            itemCount: ClassRepository.classes
+                .expand((c) => c['materi'] as List)
+                .take(3)
+                .length,
             itemBuilder: (context, index) {
               // Flatten all materials from all classes to show "Recent"
               // In a real app this would be sorted by date
               final allMaterials = ClassRepository.classes
-                  .expand((c) => (c['materi'] as List).map((m) => {
+                  .expand(
+                    (c) => (c['materi'] as List).map(
+                      (m) => {
                         ...m as Map<String, dynamic>,
                         'courseName': c['title'], // Add course name context
-                      }))
+                      },
+                    ),
+                  )
                   .toList();
-              
+
               final material = allMaterials[index];
 
               return Card(
@@ -155,8 +164,8 @@ class HomeScreen extends StatelessWidget {
                 child: ListTile(
                   onTap: () {
                     Navigator.pushNamed(
-                      context, 
-                      '/materi-detail', 
+                      context,
+                      '/materi-detail',
                       arguments: material,
                     );
                   },
@@ -174,7 +183,10 @@ class HomeScreen extends StatelessWidget {
                   ),
                   title: Text(
                     material['title'],
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -195,7 +207,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
       decoration: const BoxDecoration(
@@ -228,26 +240,31 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.red[900],
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white24),
-            ),
-            child: Row(
-              children: const [
-                Text(
-                  "MAHASISWA",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.red[900],
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: Row(
+                children: const [
+                  Text(
+                    "MAHASISWA",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                SizedBox(width: 8),
-                Icon(Icons.person, color: Colors.white, size: 16),
-              ],
+                  SizedBox(width: 8),
+                  Icon(Icons.person, color: Colors.white, size: 16),
+                ],
+              ),
             ),
           ),
         ],
@@ -324,12 +341,12 @@ class HomeScreen extends StatelessWidget {
               Stack(
                 alignment: Alignment.center,
                 children: [
-                   Icon(Icons.settings, color: Colors.orange[300], size: 40),
-                   Positioned(
-                     bottom: 0,
-                     right: 0,
-                     child: Icon(Icons.warning, color: Colors.orange, size: 20),
-                   ),
+                  Icon(Icons.settings, color: Colors.orange[300], size: 40),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Icon(Icons.warning, color: Colors.orange, size: 20),
+                  ),
                 ],
               ),
               const SizedBox(width: 16),
@@ -348,10 +365,7 @@ class HomeScreen extends StatelessWidget {
                   SizedBox(height: 4),
                   Text(
                     "Sabtu 12 Juni 2021",
-                    style: TextStyle(
-                      color: Colors.blueGrey,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.blueGrey, fontSize: 12),
                   ),
                 ],
               ),

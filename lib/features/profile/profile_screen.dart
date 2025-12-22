@@ -16,14 +16,10 @@ class ProfileScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              // Edit Profile
-            },
-          ),
-        ],
+        leading: IconButton(
+          icon: const Icon(Icons.keyboard_backspace_sharp, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(

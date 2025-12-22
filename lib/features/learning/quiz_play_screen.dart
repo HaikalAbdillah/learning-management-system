@@ -14,7 +14,7 @@ class QuizPlayScreen extends StatefulWidget {
 class _QuizPlayScreenState extends State<QuizPlayScreen> {
   int currentQuestionIndex = 0;
   Map<int, int> userAnswers = {}; // Index Soal -> Index Jawaban
-  late List<Map<String, dynamic>> questions;
+  List<Map<String, dynamic>> questions = [];
 
   Timer? _timer;
   int _remainingTime = 900; // 15 menit in seconds
@@ -314,6 +314,11 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (questions.isEmpty) {
+      return const Scaffold(
+        body: Center(child: Text('No questions available')),
+      );
+    }
     final title = widget.quizData?['title'] ?? 'Quiz Review 01';
     final currentQ = questions[currentQuestionIndex];
     final totalQuestions = questions.length;
