@@ -4,6 +4,7 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/help_screen.dart';
 import '../features/learning/class_detail_screen.dart';
 import '../features/learning/materi_detail_screen.dart';
+import '../features/learning/assignment_screen.dart';
 import '../features/home/main_navigation.dart';
 import '../features/courses/lesson_screen.dart';
 import '../features/learning/quiz_screen.dart';
@@ -12,6 +13,7 @@ import '../features/learning/quiz_play_screen.dart';
 import '../features/home/announcement_screen.dart';
 import '../features/home/announcement_list_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/profile/edit_profile_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -28,6 +30,8 @@ class AppRoutes {
   static const String announcementDetail = '/announcement-detail';
   static const String announcementList = '/announcement-list';
   static const String profile = '/profile';
+  static const String editProfile = '/edit-profile';
+  static const String assignmentDetail = '/assignment-detail';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -69,9 +73,15 @@ class AppRoutes {
       case announcementDetail:
         return MaterialPageRoute(builder: (_) => const AnnouncementScreen());
       case announcementList:
-        return MaterialPageRoute(builder: (_) => const AnnouncementListScreen());
+        return MaterialPageRoute(
+          builder: (_) => const AnnouncementListScreen(),
+        );
+      case assignmentDetail:
+        return MaterialPageRoute(builder: (_) => const AssignmentScreen());
       case profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
+      case editProfile:
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

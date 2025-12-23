@@ -2,12 +2,26 @@ import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_repository.dart';
+import '../../services/class_repository.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  // Force rebuild when returning from edit
+  void _refresh() {
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final user = UserRepository.user;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -20,6 +34,15 @@ class ProfileScreen extends StatelessWidget {
           icon: const Icon(Icons.keyboard_backspace_sharp, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/edit-profile');
+              _refresh(); // Refresh data on return
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -67,9 +90,9 @@ class ProfileScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Haikal Abdillah",
-                              style: TextStyle(
+                            Text(
+                              user['name'],
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
@@ -87,13 +110,21 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text(
-                                "MAHASISWA",
-                                style: TextStyle(
+                              child: Text(
+                                (user['role'] as String).toUpperCase(),
+                                style: const TextStyle(
                                   color: AppTheme.primaryColor,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                 ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              user['email'],
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
                               ),
                             ),
                           ],
@@ -104,13 +135,38 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 16),
-                  _buildInfoRow("NIM", "1301194000"),
+                  _buildInfoRow("NIM", user['nim']),
                   const SizedBox(height: 12),
-                  _buildInfoRow("Jurusan", "S1 Informatika"),
+                  _buildInfoRow("Jurusan", user['jurusan']),
                   const SizedBox(height: 12),
-                  _buildInfoRow("Angkatan", "2019"),
+                  _buildInfoRow("Angkatan", user['angkatan']),
                 ],
               ),
+            ),
+
+            // Enrollement Section (Synchronized)
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: const Text(
+                "Kelas yang Diikuti",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(24),
+              itemCount: ClassRepository.classes.length,
+              itemBuilder: (context, index) {
+                final cls = ClassRepository.classes[index];
+                return _buildClassItem(context, cls);
+              },
             ),
 
             // Settings Section
@@ -150,6 +206,7 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 40),
           ],
         ),
       ),
@@ -183,6 +240,43 @@ class ProfileScreen extends StatelessWidget {
         color: Colors.grey,
       ),
       onTap: () {},
+    );
+  }
+
+  Widget _buildClassItem(BuildContext context, Map<String, dynamic> cls) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: cls['color'].withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(Icons.school, color: cls['color']),
+        ),
+        title: Text(
+          cls['title'],
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        ),
+        subtitle: Text(cls['instructor'], style: const TextStyle(fontSize: 11)),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 14,
+          color: Colors.grey,
+        ),
+        onTap: () {
+          Navigator.pushNamed(context, '/class-detail', arguments: cls['id']);
+        },
+      ),
     );
   }
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../config/app_theme.dart';
+import '../../services/user_repository.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -16,10 +18,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize with dummy data
-    _nameController.text = 'John Doe';
-    _emailController.text = 'johndoe@example.com';
-    _phoneController.text = '+1234567890';
+    // Initialize with real data
+    final user = UserRepository.user;
+    _nameController.text = user['name'] ?? '';
+    _emailController.text = user['email'] ?? '';
+    _phoneController.text = user['phone'] ?? '';
   }
 
   @override
@@ -32,7 +35,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _handleSave() {
     if (_formKey.currentState!.validate()) {
-      // Save profile logic here
+      // Update repository
+      UserRepository.user['name'] = _nameController.text;
+      UserRepository.user['email'] = _emailController.text;
+      UserRepository.user['phone'] = _phoneController.text;
+      
       Navigator.pop(context);
     }
   }
@@ -42,18 +49,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),
-        backgroundColor: const Color(0xFFDC143C), // Red color
+        backgroundColor: AppTheme.primaryColor,
+        elevation: 0,
         actions: [
           TextButton(
             onPressed: _handleSave,
             child: const Text(
-              'Save',
+              'Simpan',
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
@@ -63,16 +71,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 50,
-                    backgroundColor: Color(0xFFDC143C),
-                    child: Icon(Icons.person, size: 50, color: Colors.white),
+                    backgroundColor: Colors.grey[200],
+                    child: const Icon(Icons.person, size: 50, color: Colors.grey),
                   ),
                   Container(
                     width: 30,
                     height: 30,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFDC143C),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -89,12 +97,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Full Name',
+                  labelText: 'Nama Lengkap',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
+                    return 'Mohon isi nama anda';
                   }
                   return null;
                 },
@@ -110,10 +118,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
+                    return 'Mohon isi email anda';
                   }
                   if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                    return 'Please enter a valid email';
+                    return 'Mohon isi email yang valid';
                   }
                   return null;
                 },
@@ -124,26 +132,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               TextFormField(
                 controller: _phoneController,
                 decoration: const InputDecoration(
-                  labelText: 'Phone Number',
+                  labelText: 'Nomor Telepon',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
+                    return 'Mohon isi nomor telepon anda';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 20),
-
-              // Bio field
-              TextFormField(
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Bio',
-                  border: OutlineInputBorder(),
-                ),
-              ),
             ],
           ),
         ),

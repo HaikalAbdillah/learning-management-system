@@ -50,7 +50,7 @@ class MyClassesScreen extends StatelessWidget {
             title: cls['title'],
             instructor: cls['instructor'],
             progress: cls['progress'],
-            color: cls['color'].withOpacity(0.3), // Lighter bg
+            color: cls['color'].withValues(alpha: 0.3), // Lighter bg
           );
         }).toList(),
       ),

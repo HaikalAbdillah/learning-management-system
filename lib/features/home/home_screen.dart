@@ -50,7 +50,7 @@ class HomeScreen extends StatelessWidget {
           // Upcoming Task Card
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: _buildUpcomingTaskCard(),
+            child: _buildUpcomingTaskCard(context),
           ),
 
           const SizedBox(height: 24),
@@ -272,51 +272,56 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUpcomingTaskCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFB71C1C), // Deep Red
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "DESAIN ANTARMUKA & PENGALAMAN PENGGUNA",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
+  Widget _buildUpcomingTaskCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/assignment-detail');
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFB71C1C), // Deep Red
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "DESAIN ANTARMUKA & PENGALAMAN PENGGUNA",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            "Tugas 01 - UID Android Mobile Game",
-            style: TextStyle(color: Colors.white, fontSize: 14),
-          ),
-          const SizedBox(height: 20),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Column(
-              children: const [
-                Text(
-                  "Waktu Pengumpulan",
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-                Text(
-                  "Jumat 26 Februari, 23:59 WIB",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+            const SizedBox(height: 12),
+            const Text(
+              "Tugas 01 - UID Android Mobile Game",
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+            const SizedBox(height: 20),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Column(
+                children: const [
+                  Text(
+                    "Waktu Pengumpulan",
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
-                ),
-              ],
+                  Text(
+                    "Jumat 26 Februari, 23:59 WIB",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
