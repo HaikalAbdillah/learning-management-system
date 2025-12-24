@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
+import '../../core/constants/assets.dart';
+import 'pentagon_painter.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -27,22 +29,21 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Placeholder for Logo - Enhanced with better visual
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  width: 2,
-                ),
-              ),
-              child: Icon(
-                Icons.school, // Use school icon as placeholder
-                size: 70,
-                color: Colors.white,
+            // Logo Image
+            PentagonShadow(
+              size: 120,
+              shadowColor: Colors.black,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+              child: Image.asset(
+                AppAssets.logo,
+                width: 120,
+                height: 120,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback to icon if image fails to load
+                  return Icon(Icons.school, size: 70, color: Colors.white);
+                },
               ),
             ),
             const SizedBox(height: 20),

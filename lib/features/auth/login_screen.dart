@@ -4,6 +4,7 @@ import '../../config/routes.dart';
 import '../../core/utils/validators.dart';
 import '../../core/constants/assets.dart';
 import '../../services/auth_service.dart';
+import 'pentagon_painter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -244,27 +245,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Try to load logo image, fallback to icon if not available
-                    FutureBuilder<bool>(
-                      future: _checkAssetExists(AppAssets.logo),
-                      builder: (context, snapshot) {
-                        if (snapshot.data == true) {
-                          return AnimatedContainer(
-                            duration: Duration(milliseconds: 300),
-                            child: Image.asset(
-                              AppAssets.logo,
-                              height: 80,
-                              width: 80,
-                              color: Colors.white,
-                              errorBuilder: (context, error, stackTrace) {
-                                return _buildLogoPlaceholder();
-                              },
-                            ),
+                    // Logo Image
+                    PentagonShadow(
+                      size: 80,
+                      shadowColor: Colors.black,
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                      child: Image.asset(
+                        AppAssets.logo,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          // Fallback to icon if image fails to load
+                          return Icon(
+                            Icons.school_outlined,
+                            size: 50,
+                            color: Colors.white,
                           );
-                        } else {
-                          return _buildLogoPlaceholder();
-                        }
-                      },
+                        },
+                      ),
                     ),
                     const SizedBox(height: 10),
                     const Text(
@@ -394,37 +394,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Future<bool> _checkAssetExists(String assetPath) async {
-    try {
-      // Simple implementation - for production, you might want to use
-      // rootBundle.load(assetPath) to actually check if the asset exists
-      // For now, we'll assume common assets exist based on path patterns
-      if (assetPath.contains('logo') || assetPath.contains('icon')) {
-        return true; // Assume common UI assets exist
-      }
-      return false; // For other assets, be conservative
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Widget _buildLogoPlaceholder() {
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 300),
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
-          width: 2,
-        ),
-      ),
-      child: Icon(Icons.school_outlined, size: 50, color: Colors.white),
     );
   }
 }

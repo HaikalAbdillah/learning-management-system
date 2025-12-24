@@ -1,99 +1,136 @@
 import 'package:flutter/material.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import '../../config/app_theme.dart';
 
-class VideoPlayerScreen extends StatelessWidget {
+class VideoPlayerScreen extends StatefulWidget {
   const VideoPlayerScreen({super.key});
 
   @override
+  State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
+}
+
+class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+  late YoutubePlayerController _controller;
+  bool _isPlayerReady = false;
+  late Map lampiran;
+  String? videoId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args is Map) {
+      lampiran = args;
+      videoId = YoutubePlayer.convertUrlToId(lampiran['url'] ?? '');
+
+      _controller = YoutubePlayerController(
+        initialVideoId: videoId ?? '',
+        flags: const YoutubePlayerFlags(
+          autoPlay: true,
+          mute: false,
+        ),
+      )..addListener(listener);
+    }
+  }
+
+  void listener() {
+    if (_isPlayerReady && mounted && !_controller.value.isFullScreen) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void deactivate() {
+    // Pauses video while navigating to next screen.
+    _controller.pause();
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Video Lesson'),
-        backgroundColor: const Color(0xFFDC143C), // Red color
+    return YoutubePlayerBuilder(
+      player: YoutubePlayer(
+        controller: _controller,
+        showVideoProgressIndicator: true,
+        progressIndicatorColor: AppTheme.primaryColor,
+        onReady: () {
+          _isPlayerReady = true;
+        },
       ),
-      body: Column(
-        children: [
-          // Video player placeholder
-          Container(
-            height: 300,
-            color: Colors.black,
-            child: const Center(
-              child: Icon(Icons.play_arrow, size: 100, color: Colors.white),
+      builder: (context, player) {
+        if (ModalRoute.of(context)?.settings.arguments == null ||
+            videoId == null) {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: AppTheme.primaryColor,
+              title: const Text('Video Tutorial'),
+            ),
+            body: const Center(
+              child: Text('Tidak ada video tutorial'),
+            ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: Colors.grey[100],
+          appBar: AppBar(
+            backgroundColor: AppTheme.primaryColor,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              lampiran['title'] ?? 'Video Player',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-          const SizedBox(height: 20),
-
-          // Video title
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0),
-            child: Text(
-              'Getting Started with Flutter',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // Video description
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0),
-            child: Text(
-              'Learn the basics of Flutter development in this introductory video. We will cover the fundamental concepts and get you started with building your first Flutter application.',
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Progress bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: LinearProgressIndicator(
-              value: 0.3,
-              color: const Color(0xFFDC143C),
-              backgroundColor: Colors.grey[300],
-            ),
-          ),
-          const SizedBox(height: 5),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: const Text('30% watched'),
-          ),
-          const SizedBox(height: 30),
-
-          // Action buttons
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.skip_previous, size: 40),
-                  onPressed: () {
-                    // Previous video
-                  },
+          body: ListView(
+            children: [
+              player,
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      lampiran['title'] ?? 'Judul Video',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                        'Deskripsi Video: Tutorial ini akan membantu Anda memahami materi dengan lebih baik melalui panduan visual.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        )),
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const ListTile(
+                      leading: Icon(Icons.info_outline),
+                      title: Text('Tentang Platform'),
+                      subtitle: Text('YouTube'),
+                    ),
+                  ],
                 ),
-                Container(
-                  width: 70,
-                  height: 70,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFDC143C),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.play_arrow,
-                    size: 40,
-                    color: Colors.white,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.skip_next, size: 40),
-                  onPressed: () {
-                    // Next video
-                  },
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

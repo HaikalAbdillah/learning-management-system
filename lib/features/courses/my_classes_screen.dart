@@ -6,6 +6,19 @@ import '../../services/class_repository.dart';
 class MyClassesScreen extends StatelessWidget {
   const MyClassesScreen({super.key});
 
+  Color _getClassColor(String? type) {
+    switch (type) {
+      case 'ui_design':
+        return Colors.red;
+      case 'mobile_programming':
+        return Colors.blue;
+      case 'web_programming':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,9 +61,11 @@ class MyClassesScreen extends StatelessWidget {
             context,
             id: cls['id'],
             title: cls['title'],
-            instructor: cls['instructor'],
-            progress: cls['progress'],
-            color: cls['color'].withValues(alpha: 0.3), // Lighter bg
+            instructor: 'Instructor', // Default
+            progress: 0.0, // Default
+            color: _getClassColor(
+              cls['type'],
+            ).withValues(alpha: 0.3), // Lighter bg
           );
         }).toList(),
       ),

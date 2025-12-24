@@ -5,6 +5,19 @@ import '../../services/class_repository.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  Color _getClassColor(String? type) {
+    switch (type) {
+      case 'ui_design':
+        return Colors.red;
+      case 'mobile_programming':
+        return Colors.blue;
+      case 'web_programming':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -107,10 +120,10 @@ class HomeScreen extends StatelessWidget {
                     );
                   },
                   child: _buildProgressItem(
-                    color: cls['color'],
+                    color: _getClassColor(cls['type']),
                     title: cls['title'],
-                    code: cls['code'] ?? "", // Added code to repository
-                    progress: cls['progress'],
+                    code: "", // Default
+                    progress: 0.0, // Default
                     iconText: cls['title'][0], // Simple icon logic
                     isImage: false, // For now simple
                   ),

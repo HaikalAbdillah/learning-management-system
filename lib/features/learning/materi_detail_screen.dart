@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../config/app_theme.dart';
+import '../../config/routes.dart';
 import 'materi_content/ui_design_content.dart';
 import 'materi_content/mobile_programming_content.dart';
 import 'materi_content/web_programming_content.dart';
@@ -58,24 +60,15 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              materiData?['title'] ?? 'Detail Materi',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              materiData?['badgeText'] ?? '',
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
+        title: Text(
+          materiData?['title'] ?? 'Detail Materi',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -99,6 +92,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
 
   Widget _buildLampiranTab() {
     final materiData = widget.materiData;
+    final List<dynamic> lampiranList = materiData?['lampiran'] ?? [];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -111,35 +105,53 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           const SizedBox(height: 20),
 
           // Lampiran Materi
-          Text(
-            'Lampiran Materi',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+          if (lampiranList.isNotEmpty) ...[
+            Text(
+              'Lampiran Materi',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
+            // List Lampiran
+            ...lampiranList.map((lampiran) {
+              IconData icon;
+              String type = lampiran['type'].toString().toLowerCase();
 
-          // List Lampiran
-          _buildLampiranItem(
-            icon: Icons.link,
-            title: 'URL Materi 1',
-            subtitle: 'https://example.com/materi-1',
-            type: 'URL',
-          ),
-          _buildLampiranItem(
-            icon: Icons.picture_as_pdf,
-            title: 'File PDF Materi',
-            subtitle: 'materi-ui-design.pdf',
-            type: 'File',
-          ),
-          _buildLampiranItem(
-            icon: Icons.play_circle_outline,
-            title: 'Video Pembelajaran',
-            subtitle: 'video-intro-ui.mp4',
-            type: 'Video',
-          ),
+              if (type == 'pdf' || type == 'ppt') {
+                icon = Icons.picture_as_pdf;
+              } else if (type == 'video') {
+                icon = Icons.play_circle_fill;
+              } else if (type == 'zoom') {
+                icon = Icons.video_call;
+              } else {
+                icon = Icons.link;
+              }
+
+              bool isVideo = type == 'video';
+              bool hasUrl = lampiran['url'] != null &&
+                  lampiran['url'].toString().isNotEmpty;
+
+              if (isVideo && !hasUrl) {
+                return const SizedBox.shrink();
+              }
+
+              return _buildLampiranItem(
+                icon: icon,
+                title: lampiran['title'] ?? 'Lampiran',
+                subtitle: lampiran['path'] ?? lampiran['url'] ?? '',
+                type: type.toUpperCase(),
+                lampiranData: lampiran,
+              );
+            }),
+          ] else ...[
+            _buildEmptyState(
+              'Belum ada lampiran',
+              'Materi ini belum memiliki lampiran document',
+            ),
+          ],
         ],
       ),
     );
@@ -166,6 +178,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     required String title,
     required String subtitle,
     required String type,
+    Map<String, dynamic>? lampiranData,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -188,6 +201,8 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
         ),
         subtitle: Text(
           subtitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 12, color: Colors.grey[600]),
         ),
         trailing: Container(
@@ -206,10 +221,38 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           ),
         ),
         onTap: () {
-          // Handle lampiran tap
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Membuka $title')));
+          if (lampiranData != null) {
+            final type = lampiranData['type'].toString().toLowerCase();
+            switch (type) {
+              case 'pdf':
+              case 'ppt':
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.documentViewer,
+                  arguments: lampiranData,
+                );
+                break;
+              case 'video':
+                if (lampiranData['url'] != null &&
+                    lampiranData['url'].toString().isNotEmpty) {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.videoPlayer,
+                    arguments: lampiranData,
+                  );
+                }
+                break;
+              case 'zoom':
+                if (lampiranData['url'] != null) {
+                  launchUrl(Uri.parse(lampiranData['url']));
+                }
+                break;
+              default:
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Membuka ${lampiranData['title']}')),
+                );
+            }
+          }
         },
       ),
     );
@@ -239,9 +282,13 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           borderRadius: BorderRadius.circular(12),
           onTap: () {
             if (type == 'quiz') {
-              Navigator.pushNamed(context, '/quiz-play', arguments: tugasData);
+              Navigator.pushNamed(
+                context,
+                AppRoutes.quizPlay,
+                arguments: tugasData,
+              );
             } else {
-              Navigator.pushNamed(context, '/quiz-detail');
+              Navigator.pushNamed(context, AppRoutes.quizDetail);
             }
           },
           child: Padding(
@@ -306,7 +353,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
 
     Widget content;
     switch (type) {
-      case 'ui_design':
+      case 'ui_ux':
         content = const UIDesignContent();
         break;
       case 'mobile_programming':

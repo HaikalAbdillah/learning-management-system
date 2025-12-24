@@ -34,11 +34,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
       materiList = List<Map<String, dynamic>>.from(classData['materi'] ?? []);
     } catch (e) {
       // Fallback or error handling
-      classData = {
-        'title': 'Kelas Tidak Ditemukan',
-        'code': '-',
-        'instructor': '-',
-      };
+      classData = {'title': 'Kelas Tidak Ditemukan'};
       materiList = [];
     }
   }
@@ -98,24 +94,15 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              classData['title'] ?? "Course",
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              "${classData['code']} [${classData['instructor']}]",
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
+        title: Text(
+          classData['title'] ?? "Course",
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -150,17 +137,32 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
             itemCount: materiList.length,
             itemBuilder: (context, index) {
               final materi = materiList[index];
+              final data = Map<String, dynamic>.from(materi);
+              data['classType'] = classData['type'];
               return _buildContentCard(
-                badgeText: materi['badgeText'],
-                badgeColor: materi['badgeColor'],
+                badgeText: 'Pertemuan ${materi['id']}',
+                badgeColor: _getBadgeColor(classData['type']),
                 title: materi['title'],
                 description: materi['description'],
-                isCompleted: materi['isCompleted'],
-                contentType: materi['contentType'],
-                data: materi,
+                isCompleted: false, // Default to false
+                contentType: ContentType.lesson,
+                data: data,
               );
             },
           );
+  }
+
+  Color _getBadgeColor(String? type) {
+    switch (type) {
+      case 'ui_ux':
+        return Colors.red;
+      case 'mobile_programming':
+        return Colors.blue;
+      case 'web_programming':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildTugasTab() {

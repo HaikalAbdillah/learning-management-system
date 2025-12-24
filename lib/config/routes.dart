@@ -14,6 +14,9 @@ import '../features/home/announcement_screen.dart';
 import '../features/home/announcement_list_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/profile/edit_profile_screen.dart';
+import '../features/learning/document_viewer_screen.dart';
+import '../features/learning/video_player_screen.dart';
+import '../features/learning/browser_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -32,9 +35,27 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String editProfile = '/edit-profile';
   static const String assignmentDetail = '/assignment-detail';
+  static const String documentViewer = '/document-viewer';
+  static const String videoPlayer = '/video-player';
+  static const String browser = '/browser';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case browser:
+        return MaterialPageRoute(
+          builder: (_) => const BrowserScreen(),
+          settings: settings,
+        );
+      case videoPlayer:
+        return MaterialPageRoute(
+          builder: (_) => const VideoPlayerScreen(),
+          settings: settings,
+        );
+      case documentViewer:
+        return MaterialPageRoute(
+          builder: (_) => const DocumentViewerScreen(),
+          settings: settings,
+        );
       case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       case login:

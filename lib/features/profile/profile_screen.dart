@@ -244,6 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildClassItem(BuildContext context, Map<String, dynamic> cls) {
+    Color classColor = _getClassColor(cls['type']);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -256,10 +257,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: cls['color'].withValues(alpha: 0.2),
+            color: classColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(Icons.school, color: cls['color']),
+          child: Icon(Icons.school, color: classColor),
         ),
         title: Text(
           cls['title'],
@@ -267,7 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         ),
-        subtitle: Text(cls['instructor'], style: const TextStyle(fontSize: 11)),
+        subtitle: const Text('Instructor', style: TextStyle(fontSize: 11)),
         trailing: const Icon(
           Icons.arrow_forward_ios,
           size: 14,
@@ -278,6 +279,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         },
       ),
     );
+  }
+
+  Color _getClassColor(String? type) {
+    switch (type) {
+      case 'ui_design':
+        return Colors.red;
+      case 'mobile_programming':
+        return Colors.blue;
+      case 'web_programming':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
   }
 
   Future<void> _logout(BuildContext context) async {
