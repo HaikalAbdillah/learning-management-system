@@ -17,6 +17,7 @@ import '../features/profile/edit_profile_screen.dart';
 import '../features/learning/document_viewer_screen.dart';
 import '../features/learning/video_player_screen.dart';
 import '../features/learning/browser_screen.dart';
+import '../features/learning/slide_viewer_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -38,9 +39,15 @@ class AppRoutes {
   static const String documentViewer = '/document-viewer';
   static const String videoPlayer = '/video-player';
   static const String browser = '/browser';
+  static const String slideViewer = '/slide-viewer';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case slideViewer:
+        return MaterialPageRoute(
+          builder: (_) => const SlideViewerScreen(),
+          settings: settings,
+        );
       case browser:
         return MaterialPageRoute(
           builder: (_) => const BrowserScreen(),

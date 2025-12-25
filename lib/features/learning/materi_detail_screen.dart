@@ -5,6 +5,7 @@ import '../../config/routes.dart';
 import 'materi_content/ui_design_content.dart';
 import 'materi_content/mobile_programming_content.dart';
 import 'materi_content/web_programming_content.dart';
+import 'materi_content/cyber_security_content.dart';
 import 'materi_content/default_content.dart';
 
 class MateriDetailScreen extends StatefulWidget {
@@ -102,7 +103,6 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           // Dynamic Content based on type
           _buildDynamicContent(materiData),
           const SizedBox(height: 20),
-          const SizedBox(height: 20),
 
           // Lampiran Materi
           if (lampiranList.isNotEmpty) ...[
@@ -126,6 +126,8 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
                 icon = Icons.play_circle_fill;
               } else if (type == 'zoom') {
                 icon = Icons.video_call;
+              } else if (type == 'slide') {
+                icon = Icons.slideshow;
               } else {
                 icon = Icons.link;
               }
@@ -226,11 +228,19 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
             switch (type) {
               case 'pdf':
               case 'ppt':
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.documentViewer,
-                  arguments: lampiranData,
-                );
+                if (lampiranData['slides'] != null) {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.slideViewer,
+                    arguments: lampiranData,
+                  );
+                } else {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.documentViewer,
+                    arguments: lampiranData,
+                  );
+                }
                 break;
               case 'video':
                 if (lampiranData['url'] != null &&
@@ -246,6 +256,13 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
                 if (lampiranData['url'] != null) {
                   launchUrl(Uri.parse(lampiranData['url']));
                 }
+                break;
+              case 'slide':
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.slideViewer,
+                  arguments: lampiranData,
+                );
                 break;
               default:
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -361,6 +378,9 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
         break;
       case 'web_programming':
         content = const WebProgrammingContent();
+        break;
+      case 'cyber_security':
+        content = CyberSecurityContent(materiData: materiData);
         break;
       default:
         content = DefaultMateriContent(materiData: materiData);

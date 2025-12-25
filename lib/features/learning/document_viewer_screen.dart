@@ -31,7 +31,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     final String type = (lampiran['type'] ?? 'pdf').toString().toLowerCase();
     
-    isPdf = type == 'pdf';
+    isPdf = type == 'pdf' || type == 'ppt';
 
     if (!isPdf) {
       String path = lampiran['path'] ?? lampiran['url'] ?? '';

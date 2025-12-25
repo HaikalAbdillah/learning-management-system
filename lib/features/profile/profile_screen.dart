@@ -289,6 +289,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return Colors.blue;
       case 'web_programming':
         return Colors.purple;
+      case 'cyber_security':
+        return Colors.green;
       default:
         return Colors.grey;
     }

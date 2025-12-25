@@ -14,6 +14,8 @@ class MyClassesScreen extends StatelessWidget {
         return Colors.blue;
       case 'web_programming':
         return Colors.purple;
+      case 'cyber_security':
+        return Colors.green;
       default:
         return Colors.grey;
     }
