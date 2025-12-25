@@ -54,16 +54,32 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args == null || args is! Map<String, dynamic>) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Kuis'),
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: const Center(child: Text('Data kuis tidak tersedia')),
+      );
+    }
+
+    // ignore: unused_local_variable
+    final materiData = args['materi'] as Map<String, dynamic>?;
+
     final question = _questions[_currentQuestionIndex];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'Kuis ${_currentQuestionIndex + 1}/${_questions.length}',
-          style: TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black),
         ),
         backgroundColor: Colors.white,
-        iconTheme: IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.black),
         elevation: 0,
       ),
       body: Padding(

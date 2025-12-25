@@ -18,6 +18,23 @@ class ClassRepository {
               'url': 'https://youtu.be/fZXfF6RyNpU',
             },
           ] : [],
+          'tugas': p == 1 ? [
+            {
+              'id': 1,
+              'title': 'Tugas 01 – UID Android Mobile Game',
+              'deadline': '26 Februari 2021, 23:59 WIB',
+              'status': 'Belum Dikerjakan',
+              'isDone': false,
+            }
+          ] : [],
+          'kuis': p == 1 ? [
+            {
+              'id': 1,
+              'title': 'Quiz Review 01',
+              'desc': 'Silahkan kerjakan kuis ini...',
+              'isDone': true,
+            }
+          ] : [],
         };
       }),
     },
@@ -39,6 +56,8 @@ class ClassRepository {
               'url': 'https://youtu.be/1ukSR1GRtMU',
             },
           ] : [],
+          'tugas': [],
+          'kuis': [],
         };
       }),
     },
@@ -71,6 +90,8 @@ class ClassRepository {
               ] : [],
             },
           ],
+          'tugas': [],
+          'kuis': [],
         };
       }),
     },
@@ -92,6 +113,8 @@ class ClassRepository {
               'path': 'assets/materi/web/web_p1.pdf',
             },
           ] : [],
+          'tugas': [],
+          'kuis': [],
         };
       }),
     },

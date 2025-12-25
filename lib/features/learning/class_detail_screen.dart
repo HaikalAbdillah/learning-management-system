@@ -39,42 +39,6 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
     }
   }
 
-  // Data untuk Tab Tugas dan Kuis
-  final List<Map<String, dynamic>> tugasDanKuis = [
-    {
-      'id': 'quiz1',
-      'type': 'quiz',
-      'badgeText': 'Quiz',
-      'badgeColor': Colors.blue,
-      'title': 'Quiz Review 01',
-      'desc': 'Silahkan kerjakan kuis ini...',
-      'description': 'Tenggat Waktu: 20 Februari 2021 23:59 WIB',
-      'done': true,
-      'contentType': ContentType.quiz,
-    },
-    {
-      'id': 'quiz2',
-      'type': 'quiz',
-      'badgeText': 'Quiz',
-      'badgeColor': Colors.purple,
-      'title': 'Quiz Review 02 - Flutter Basic',
-      'desc': 'Tes pengetahuan dasar Flutter...',
-      'description': 'Tenggat Waktu: 25 Februari 2021 23:59 WIB',
-      'done': false,
-      'contentType': ContentType.quiz,
-    },
-    {
-      'id': 'tugas1',
-      'type': 'tugas',
-      'badgeText': 'Tugas',
-      'badgeColor': Colors.blue,
-      'title': 'Tugas 01 – UID Android Mobile Game',
-      'desc': 'Buatlah desain tampilan...',
-      'description': 'Tenggat Waktu: 26 Februari 2021 23:59 WIB',
-      'done': false,
-      'contentType': ContentType.assignment,
-    },
-  ];
 
   // InitState removed here as it is moved up
 
@@ -168,25 +132,58 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
   }
 
   Widget _buildTugasTab() {
-    return tugasDanKuis.isEmpty
+    // Collect all assignments and quizzes from all meetings
+    final List<Map<String, dynamic>> aggregatedItems = [];
+
+    for (var materi in materiList) {
+      // Assignments
+      final List<dynamic> assignmentList = materi['tugas'] ?? [];
+      for (var tugas in assignmentList) {
+        aggregatedItems.add({
+          'badgeText': 'Tugas',
+          'badgeColor': Colors.blue,
+          'title': tugas['title'],
+          'description': 'Tenggat Waktu: ${tugas['deadline']}',
+          'done': tugas['isDone'],
+          'contentType': ContentType.assignment,
+          'materi': materi,
+        });
+      }
+
+      // Quizzes
+      final List<dynamic> quizList = materi['kuis'] ?? [];
+      for (var quiz in quizList) {
+        aggregatedItems.add({
+          'badgeText': 'Quiz',
+          'badgeColor': Colors.purple,
+          'title': quiz['title'],
+          'description': quiz['desc'] ?? 'Kerjakan kuis ini',
+          'done': quiz['isDone'] ?? false,
+          'contentType': ContentType.quiz,
+          'materi': materi,
+        });
+      }
+    }
+
+    return aggregatedItems.isEmpty
         ? _buildEmptyState(
             'Tidak Ada Tugas Dan Kuis',
             'Tugas dan kuis akan muncul di sini',
           )
         : ListView.builder(
             padding: const EdgeInsets.all(20),
-            itemCount: tugasDanKuis.length,
+            itemCount: aggregatedItems.length,
             itemBuilder: (context, index) {
-              final tugas = tugasDanKuis[index];
+              final item = aggregatedItems[index];
               return _buildContentCard(
-                badgeText: tugas['badgeText'],
-                badgeColor: tugas['badgeColor'],
-                title: tugas['title'],
-                description: tugas['description'],
-                isCompleted: tugas['done'],
-                isTask: true,
-                contentType: tugas['contentType'],
-                data: tugas,
+                badgeText: item['badgeText'],
+                badgeColor: item['badgeColor'],
+                title: item['title'],
+                description: item['description'],
+                isCompleted: item['done'],
+                isTask: item['contentType'] == ContentType.assignment,
+                contentType: item['contentType'],
+                data: item,
               );
             },
           );
@@ -252,10 +249,10 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
                 Navigator.pushNamed(context, '/materi-detail', arguments: data);
                 break;
               case ContentType.quiz:
-                Navigator.pushNamed(context, '/quiz-play', arguments: data);
+                Navigator.pushNamed(context, AppRoutes.quiz, arguments: data);
                 break;
               case ContentType.assignment:
-                Navigator.pushNamed(context, AppRoutes.quizDetail);
+                Navigator.pushNamed(context, AppRoutes.tugas, arguments: data);
                 break;
             }
           },

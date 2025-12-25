@@ -18,6 +18,7 @@ import '../features/learning/document_viewer_screen.dart';
 import '../features/learning/video_player_screen.dart';
 import '../features/learning/browser_screen.dart';
 import '../features/learning/slide_viewer_screen.dart';
+import '../features/learning/tugas_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -40,9 +41,14 @@ class AppRoutes {
   static const String videoPlayer = '/video-player';
   static const String browser = '/browser';
   static const String slideViewer = '/slide-viewer';
+  static const String tugas = '/tugas';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case tugas:
+        return MaterialPageRoute(
+          builder: (_) => const TugasScreen(),
+        );
       case slideViewer:
         return MaterialPageRoute(
           builder: (_) => const SlideViewerScreen(),
@@ -84,7 +90,9 @@ class AppRoutes {
       case lesson:
         return MaterialPageRoute(builder: (_) => const LessonScreen());
       case quiz:
-        return MaterialPageRoute(builder: (_) => const QuizScreen());
+        return MaterialPageRoute(
+          builder: (_) => const QuizScreen(),
+        );
       case quizDetail:
         return MaterialPageRoute(builder: (_) => const QuizDetailScreen());
       case quizPlay:

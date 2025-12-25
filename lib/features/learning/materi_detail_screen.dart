@@ -21,21 +21,6 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Dummy data untuk tugas dan kuis dalam materi detail
-  final List<Map<String, dynamic>> tugasDanKuis = [
-    {
-      'type': 'quiz',
-      'title': 'Quiz Review 01',
-      'desc': 'Silahkan kerjakan kuis ini...',
-      'done': true,
-    },
-    {
-      'type': 'tugas',
-      'title': 'Tugas 01 – UID Android Mobile Game',
-      'desc': 'Buatlah desain tampilan...',
-      'done': false,
-    },
-  ];
 
   @override
   void initState() {
@@ -160,19 +145,114 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
   }
 
   Widget _buildTugasTab() {
-    return tugasDanKuis.isEmpty
-        ? _buildEmptyState(
-            'Tidak Ada Tugas Dan Kuis',
-            'Tugas dan kuis akan muncul di sini',
-          )
-        : ListView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: tugasDanKuis.length,
-            itemBuilder: (context, index) {
-              final tugas = tugasDanKuis[index];
-              return _buildTugasCard(tugasData: tugas);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildMenuCard(
+            title: 'Tugas',
+            subtitle: 'Lihat daftar tugas untuk materi ini',
+            icon: Icons.assignment_outlined,
+            color: Colors.blue,
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                AppRoutes.tugas,
+                arguments: {
+                  'materi': widget.materiData,
+                },
+              );
             },
-          );
+          ),
+          const SizedBox(height: 16),
+          _buildMenuCard(
+            title: 'Kuis',
+            subtitle: 'Kerjakan kuis untuk menguji pemahaman Anda',
+            icon: Icons.quiz_outlined,
+            color: Colors.purple,
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                AppRoutes.quiz,
+                arguments: {
+                  'materi': widget.materiData,
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 28),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: Colors.grey[400]),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildLampiranItem({
@@ -275,93 +355,6 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     );
   }
 
-  Widget _buildTugasCard({required Map<String, dynamic> tugasData}) {
-    final type = tugasData['type'];
-    final title = tugasData['title'];
-    final desc = tugasData['desc'];
-    final done = tugasData['done'];
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            if (type == 'quiz') {
-              Navigator.pushNamed(
-                context,
-                AppRoutes.quizPlay,
-                arguments: tugasData,
-              );
-            } else {
-              Navigator.pushNamed(context, AppRoutes.quizDetail);
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        type == 'quiz' ? 'Quiz' : 'Tugas',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.check_circle,
-                      color: done ? Colors.green : Colors.grey[300],
-                      size: 20,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  desc,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildDynamicContent(Map<String, dynamic>? materiData) {
     if (materiData == null) return const SizedBox();
