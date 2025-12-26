@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../config/app_theme.dart';
+import '../../services/materi_progress_service.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   const VideoPlayerScreen({super.key});
@@ -14,6 +15,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   bool _isPlayerReady = false;
   late Map lampiran;
   String? videoId;
+  String? _materiId;
+  bool _videoCompleted = false;
 
   @override
   void didChangeDependencies() {
@@ -23,6 +26,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     if (args is Map) {
       lampiran = args;
       videoId = YoutubePlayer.convertUrlToId(lampiran['url'] ?? '');
+      _materiId = lampiran['materiId']; // Get materi ID for progress tracking
 
       _controller = YoutubePlayerController(
         initialVideoId: videoId ?? '',
@@ -34,9 +38,30 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     }
   }
 
-  void listener() {
+  void listener() async {
     if (_isPlayerReady && mounted && !_controller.value.isFullScreen) {
       setState(() {});
+
+      // Track video completion (90% or finished)
+      if (!_videoCompleted && _controller.value.isReady) {
+        final duration = _controller.metadata.duration.inSeconds;
+        final position = _controller.value.position.inSeconds;
+
+        if (duration > 0) {
+          final progressPercentage = (position / duration) * 100;
+
+          // Mark as completed if video is finished or reached 90%
+          if (_controller.value.playerState == PlayerState.ended ||
+              progressPercentage >= 90) {
+            _videoCompleted = true;
+
+            // Update progress in service if materiId is available
+            if (_materiId != null) {
+              await MateriProgressService.updateMateriProgress(_materiId!, 'video', true);
+            }
+          }
+        }
+      }
     }
   }
 

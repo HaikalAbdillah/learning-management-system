@@ -44,9 +44,10 @@ class _MaterialSearchScreenState extends State<MaterialSearchScreen> {
 
       for (var mat in materi) {
         final materiTitle = (mat['title'] as String).toLowerCase();
-        final materiDesc = (mat['materi']?['deskripsi'] as String? ?? '').toLowerCase();
+        final materiDesc = (mat['description'] as String? ?? '').toLowerCase();
+        final classNameLower = className.toLowerCase();
 
-        if (materiTitle.contains(lowerQuery) || materiDesc.contains(lowerQuery)) {
+        if (materiTitle.contains(lowerQuery) || materiDesc.contains(lowerQuery) || classNameLower.contains(lowerQuery)) {
           _searchResults.add({
             'materiData': mat,
             'className': className,
@@ -238,7 +239,7 @@ class _MaterialSearchScreenState extends State<MaterialSearchScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      materiData['materi']?['deskripsi'] ?? 'Deskripsi tidak tersedia',
+                      materiData['description'] ?? 'Deskripsi tidak tersedia',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey[600],
@@ -252,7 +253,7 @@ class _MaterialSearchScreenState extends State<MaterialSearchScreen> {
                         Icon(Icons.play_circle_outline, size: 16, color: Colors.grey[500]),
                         const SizedBox(width: 4),
                         Text(
-                          '${(materiData['lampiran'] as List?)?.length ?? 0} lampiran',
+                          '${(materiData['materi'] as List?)?.length ?? 0} lampiran',
                           style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                         ),
                       ],

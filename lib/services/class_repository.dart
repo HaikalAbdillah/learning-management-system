@@ -137,6 +137,7 @@ class ClassRepository {
       return {
         'id': p,
         'title': 'Pertemuan $p – $title',
+        'description': 'Deskripsi untuk $title dalam konteks $className.',
         'type': classSlug,
         'materi': [
           {

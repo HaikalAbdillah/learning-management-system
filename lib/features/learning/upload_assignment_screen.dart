@@ -123,70 +123,72 @@ class _UploadAssignmentScreenState extends State<UploadAssignmentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Maksimum File 5MB, Maksimum Jumlah File 20',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[50],
+            Container(
+              width: double.infinity,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey[50],
+              ),
+              child: CustomPaint(
+                painter: DashedRectPainter(
+                  color: Colors.grey,
+                  strokeWidth: 2,
+                  dashLength: 5,
+                  gap: 5,
                 ),
-                child: CustomPaint(
-                  painter: DashedRectPainter(
-                    color: Colors.grey,
-                    strokeWidth: 2,
-                    dashLength: 5,
-                    gap: 5,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: selectedFiles.isEmpty
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.cloud_upload,
-                                size: 64,
-                                color: Colors.grey[400],
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: selectedFiles.isEmpty
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.cloud_upload,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'File yang akan di upload akan tampil di sini',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'File yang akan di upload akan tampil di sini',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                                textAlign: TextAlign.center,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          itemCount: selectedFiles.length,
+                          itemBuilder: (context, index) {
+                            File file = selectedFiles[index];
+                            return ListTile(
+                              dense: true,
+                              leading: const Icon(Icons.insert_drive_file, size: 20),
+                              title: Text(
+                                file.path.split('/').last,
+                                style: const TextStyle(fontSize: 14),
                               ),
-                            ],
-                          )
-                        : ListView.builder(
-                            itemCount: selectedFiles.length,
-                            itemBuilder: (context, index) {
-                              File file = selectedFiles[index];
-                              return ListTile(
-                                leading: const Icon(Icons.insert_drive_file),
-                                title: Text(file.path.split('/').last),
-                                subtitle: Text(_formatFileSize(file)),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () {
-                                    setState(() {
-                                      selectedFiles.removeAt(index);
-                                    });
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                  ),
+                              subtitle: Text(
+                                _formatFileSize(file),
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedFiles.removeAt(index);
+                                  });
+                                },
+                              ),
+                            );
+                          },
+                        ),
                 ),
               ),
             ),
+            const SizedBox(height: 20),
             const SizedBox(height: 20),
             Row(
               children: [

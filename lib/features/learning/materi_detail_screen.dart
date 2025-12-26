@@ -4,6 +4,7 @@ import '../../config/app_theme.dart';
 import '../../config/routes.dart';
 import '../../core/utils/string_utils.dart';
 import '../../models/materi.dart';
+import '../../services/materi_progress_service.dart';
 import 'materi_content/ui_design_content.dart';
 import 'materi_content/mobile_programming_content.dart';
 import 'materi_content/web_programming_content.dart';
@@ -22,17 +23,55 @@ class MateriDetailScreen extends StatefulWidget {
 class _MateriDetailScreenState extends State<MateriDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  Materi? _currentMateri;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _loadMateriProgress();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadMateriProgress() async {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final Map<String, dynamic>? materiData =
+        widget.materiData ??
+        ((args is Map<String, dynamic>)
+            ? (args.containsKey('materi') ? args['materi'] : args)
+            : null);
+
+    if (materiData != null) {
+      final materiId = materiData['id']?.toString() ?? '';
+      final savedProgress = await MateriProgressService.getMateriProgress(
+        materiId,
+      );
+
+      if (savedProgress != null) {
+        setState(() {
+          _currentMateri = savedProgress;
+          _isLoading = false;
+        });
+      } else {
+        // Create new materi with default progress
+        final newMateri = Materi.fromJson(materiData);
+        await MateriProgressService.saveMateriProgress(newMateri);
+        setState(() {
+          _currentMateri = newMateri;
+          _isLoading = false;
+        });
+      }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -72,12 +111,13 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           tabs: const [
             Tab(text: "Lampiran Materi"),
             Tab(text: "Tugas dan Kuis"),
+            Tab(text: "Absensi"),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [_buildLampiranTab(), _buildTugasTab()],
+        children: [_buildLampiranTab(), _buildTugasTab(), _buildAbsensiTab()],
       ),
     );
   }
@@ -173,6 +213,181 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     );
   }
 
+  Widget _buildAbsensiTab() {
+    if (_isLoading || _currentMateri == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Progress Summary
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Progres Materi',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildProgressItem(
+                  'PDF/PPT',
+                  _currentMateri!.materiProgress['pdf'] ?? false,
+                ),
+                const SizedBox(height: 12),
+                _buildProgressItem(
+                  'Video Tutorial',
+                  _currentMateri!.materiProgress['video'] ?? false,
+                ),
+                const SizedBox(height: 12),
+                _buildProgressItem(
+                  'Zoom Meeting',
+                  _currentMateri!.materiProgress['zoom'] ?? false,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Absensi Button
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Text(
+                  _currentMateri!.isAbsenDone
+                      ? 'Absensi Berhasil'
+                      : _currentMateri!.isAbsenAvailable
+                      ? 'Absensi Siap Dilakukan'
+                      : 'Selesaikan Materi Terlebih Dahulu',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: _currentMateri!.isAbsenDone
+                        ? Colors.green[700]
+                        : _currentMateri!.isAbsenAvailable
+                        ? AppTheme.primaryColor
+                        : Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed:
+                        _currentMateri!.isAbsenAvailable &&
+                            !_currentMateri!.isAbsenDone
+                        ? _performAbsensi
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          _currentMateri!.isAbsenAvailable &&
+                              !_currentMateri!.isAbsenDone
+                          ? AppTheme.primaryColor
+                          : Colors.grey[300],
+                      foregroundColor:
+                          _currentMateri!.isAbsenAvailable &&
+                              !_currentMateri!.isAbsenDone
+                          ? Colors.white
+                          : Colors.grey[500],
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      _currentMateri!.isAbsenDone
+                          ? 'Hadir ✓'
+                          : 'Absen Sekarang',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressItem(String label, bool isCompleted) {
+    return Row(
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isCompleted ? Colors.green[100] : Colors.grey[200],
+          ),
+          child: Icon(
+            isCompleted ? Icons.check : Icons.schedule,
+            size: 16,
+            color: isCompleted ? Colors.green[700] : Colors.grey[500],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: isCompleted ? Colors.black87 : Colors.grey[600],
+              decoration: isCompleted ? TextDecoration.lineThrough : null,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _performAbsensi() async {
+    if (_currentMateri != null &&
+        _currentMateri!.isAbsenAvailable &&
+        !_currentMateri!.isAbsenDone) {
+      await MateriProgressService.markAbsensiDone(_currentMateri!.id);
+      setState(() {
+        _currentMateri = _currentMateri!.copyWith(isAbsenDone: true);
+      });
+    }
+  }
+
   Widget _buildMenuCard({
     required String title,
     required String subtitle,
@@ -240,6 +455,8 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
   }
 
   Widget _buildLampiranItem(LampiranMateri lampiran) {
+    final isCompleted = _isLampiranCompleted(lampiran.type);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -291,15 +508,41 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        lampiran.title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: lampiran.isAvailable
-                              ? Colors.black87
-                              : Colors.grey[500],
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              lampiran.title,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: lampiran.isAvailable
+                                    ? Colors.black87
+                                    : Colors.grey[500],
+                              ),
+                            ),
+                          ),
+                          if (lampiran.isAvailable) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isCompleted
+                                    ? Colors.green[100]
+                                    : Colors.orange[100],
+                              ),
+                              child: Icon(
+                                isCompleted ? Icons.check : Icons.schedule,
+                                size: 12,
+                                color: isCompleted
+                                    ? Colors.green[700]
+                                    : Colors.orange[700],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -348,6 +591,23 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     );
   }
 
+  bool _isLampiranCompleted(String type) {
+    if (_currentMateri == null) return false;
+
+    switch (type) {
+      case 'pdf':
+      case 'ppt':
+      case 'slide':
+        return _currentMateri!.materiProgress['pdf'] ?? false;
+      case 'video':
+        return _currentMateri!.materiProgress['video'] ?? false;
+      case 'zoom':
+        return _currentMateri!.materiProgress['zoom'] ?? false;
+      default:
+        return false;
+    }
+  }
+
   Widget _buildDynamicContent(Map<String, dynamic>? materiData) {
     if (materiData == null) return const SizedBox();
 
@@ -389,50 +649,90 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     );
   }
 
-  void _handleLampiranTap(LampiranMateri lampiran) {
+  Future<void> _handleLampiranTap(LampiranMateri lampiran) async {
+    // Track progress based on lampiran type
+    String? progressType;
+    switch (lampiran.type) {
+      case 'pdf':
+      case 'ppt':
+      case 'slide':
+        progressType = 'pdf';
+        break;
+      case 'video':
+        progressType = 'video';
+        break;
+      case 'zoom':
+        progressType = 'zoom';
+        break;
+    }
+
+    // Update progress if not already completed
+    if (progressType != null &&
+        _currentMateri != null &&
+        !(_currentMateri!.materiProgress[progressType] ?? false)) {
+      await MateriProgressService.updateMateriProgress(
+        _currentMateri!.id,
+        progressType,
+        true,
+      );
+
+      // Reload progress
+      await _loadMateriProgress();
+    }
+
     switch (lampiran.type) {
       case 'pdf':
       case 'ppt':
         // Navigate to document viewer
-        Navigator.pushNamed(
-          context,
-          AppRoutes.documentViewer,
-          arguments: {
-            'title': lampiran.title,
-            'path': lampiran.source,
-            'type': lampiran.type,
-          },
-        );
+        if (mounted) {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.documentViewer,
+            arguments: {
+              'title': lampiran.title,
+              'path': lampiran.source,
+              'type': lampiran.type,
+            },
+          );
+        }
         break;
       case 'slide':
         // Navigate to slide viewer
-        Navigator.pushNamed(
-          context,
-          AppRoutes.slideViewer,
-          arguments: {
-            'title': lampiran.title,
-            'path': lampiran.source,
-            'slides': lampiran.source == 'assets/materi/cyber_security'
-                ? [
-                    'pertemuan pertama cyber_page-0001.jpg',
-                    'pertemuan pertama cyber_page-0002.jpg',
-                    'pertemuan pertama cyber_page-0003.jpg',
-                    'pertemuan pertama cyber_page-0004.jpg',
-                    'pertemuan pertama cyber_page-0005.jpg',
-                    'pertemuan pertama cyber_page-0006.jpg',
-                    'pertemuan pertama cyber_page-0007.jpg',
-                  ]
-                : [],
-          },
-        );
+        if (mounted) {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.slideViewer,
+            arguments: {
+              'title': lampiran.title,
+              'path': lampiran.source,
+              'slides': lampiran.source == 'assets/materi/cyber_security'
+                  ? [
+                      'pertemuan pertama cyber_page-0001.jpg',
+                      'pertemuan pertama cyber_page-0002.jpg',
+                      'pertemuan pertama cyber_page-0003.jpg',
+                      'pertemuan pertama cyber_page-0004.jpg',
+                      'pertemuan pertama cyber_page-0005.jpg',
+                      'pertemuan pertama cyber_page-0006.jpg',
+                      'pertemuan pertama cyber_page-0007.jpg',
+                    ]
+                  : [],
+            },
+          );
+        }
         break;
       case 'video':
         // Navigate to video player
-        Navigator.pushNamed(
-          context,
-          AppRoutes.videoPlayer,
-          arguments: {'title': lampiran.title, 'url': lampiran.source},
-        );
+        if (mounted) {
+          Navigator.pushNamed(
+            context,
+            AppRoutes.videoPlayer,
+            arguments: {
+              'title': lampiran.title,
+              'url': lampiran.source,
+              'materiId': _currentMateri?.id,
+            },
+          );
+        }
         break;
       case 'zoom':
         // Open in external browser
