@@ -24,13 +24,21 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Materi? _currentMateri;
+  Map<String, dynamic>? _materiData;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _loadMateriProgress();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_currentMateri == null && !_isLoading) {
+      _loadMateriProgress();
+    }
   }
 
   @override
@@ -40,12 +48,20 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
   }
 
   Future<void> _loadMateriProgress() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     final args = ModalRoute.of(context)?.settings.arguments;
     final Map<String, dynamic>? materiData =
         widget.materiData ??
         ((args is Map<String, dynamic>)
             ? (args.containsKey('materi') ? args['materi'] : args)
             : null);
+
+    setState(() {
+      _materiData = materiData;
+    });
 
     if (materiData != null) {
       final materiId = materiData['id']?.toString() ?? '';
@@ -76,13 +92,6 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    final Map<String, dynamic>? materiData =
-        widget.materiData ??
-        ((args is Map<String, dynamic>)
-            ? (args.containsKey('materi') ? args['materi'] : args)
-            : null);
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -92,7 +101,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          safeString(materiData?['title'], 'Detail Materi'),
+          safeString(_materiData?['title'], 'Detail Materi'),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -123,15 +132,8 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
   }
 
   Widget _buildLampiranTab() {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    final Map<String, dynamic>? materiData =
-        widget.materiData ??
-        ((args is Map<String, dynamic>)
-            ? (args.containsKey('materi') ? args['materi'] : args)
-            : null);
-
     // Convert to Materi model
-    final materi = materiData != null ? Materi.fromJson(materiData) : null;
+    final materi = _materiData != null ? Materi.fromJson(_materiData!) : null;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -139,7 +141,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Dynamic Content based on type
-          _buildDynamicContent(materiData),
+          _buildDynamicContent(_materiData),
           const SizedBox(height: 20),
 
           // Lampiran Materi
@@ -169,13 +171,6 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
   }
 
   Widget _buildTugasTab() {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    final Map<String, dynamic>? materiData =
-        widget.materiData ??
-        ((args is Map<String, dynamic>)
-            ? (args.containsKey('materi') ? args['materi'] : args)
-            : null);
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -190,7 +185,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
               Navigator.pushNamed(
                 context,
                 AppRoutes.tugas,
-                arguments: {'materi': materiData ?? {}},
+                arguments: {'materi': _materiData ?? {}},
               );
             },
           ),
@@ -204,7 +199,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
               Navigator.pushNamed(
                 context,
                 AppRoutes.quiz,
-                arguments: {'materi': materiData ?? {}},
+                arguments: {'materi': _materiData ?? {}},
               );
             },
           ),
@@ -697,27 +692,29 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
         }
         break;
       case 'slide':
-        // Navigate to slide viewer
+        // Navigate to document viewer for cyber security slides as PPT
         if (mounted) {
-          Navigator.pushNamed(
-            context,
-            AppRoutes.slideViewer,
-            arguments: {
-              'title': lampiran.title,
-              'path': lampiran.source,
-              'slides': lampiran.source == 'assets/materi/cyber_security'
-                  ? [
-                      'pertemuan pertama cyber_page-0001.jpg',
-                      'pertemuan pertama cyber_page-0002.jpg',
-                      'pertemuan pertama cyber_page-0003.jpg',
-                      'pertemuan pertama cyber_page-0004.jpg',
-                      'pertemuan pertama cyber_page-0005.jpg',
-                      'pertemuan pertama cyber_page-0006.jpg',
-                      'pertemuan pertama cyber_page-0007.jpg',
-                    ]
-                  : [],
-            },
-          );
+          if (lampiran.source == 'assets/materi/cyber_security') {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.documentViewer,
+              arguments: {
+                'title': lampiran.title,
+                'path': lampiran.source,
+                'type': 'ppt',
+              },
+            );
+          } else {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.slideViewer,
+              arguments: {
+                'title': lampiran.title,
+                'path': lampiran.source,
+                'slides': [],
+              },
+            );
+          }
         }
         break;
       case 'video':

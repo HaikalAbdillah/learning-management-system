@@ -169,7 +169,7 @@ class HomeScreen extends StatelessWidget {
                 .length,
             itemBuilder: (context, index) {
               // Flatten all materials from all classes to show "Recent"
-              // In a real app this would be sorted by date
+              // Sort by id descending to show latest materials first
               final allMaterials = ClassRepository.classes
                   .expand(
                     (c) => (c['materi'] as List).map(
@@ -179,7 +179,8 @@ class HomeScreen extends StatelessWidget {
                       },
                     ),
                   )
-                  .toList();
+                  .toList()
+                ..sort((a, b) => (b['id'] as int).compareTo(a['id'] as int));
 
               final material = allMaterials[index];
 
@@ -195,7 +196,7 @@ class HomeScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.pushNamed(
                       context,
-                      '/materi-detail',
+                      AppRoutes.materiDetail,
                       arguments: material,
                     );
                   },

@@ -16,7 +16,7 @@ class CyberSecurityContent extends StatelessWidget {
           _buildSectionTitle(safeString(materiData?['title'], 'Cyber Security Overview')),
           const SizedBox(height: 10),
           Text(
-            safeString(materiData?['description'], 
+            safeString(materiData?['description'],
             'Keamanan siber adalah praktik melindungi sistem, jaringan, dan program dari serangan digital.'),
             style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.5),
           ),
