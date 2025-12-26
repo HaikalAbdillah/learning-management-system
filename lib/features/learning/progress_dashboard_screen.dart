@@ -94,7 +94,7 @@ class _ProgressDashboardScreenState extends State<ProgressDashboardScreen>
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -504,6 +504,7 @@ class _ProgressDashboardScreenState extends State<ProgressDashboardScreen>
   Widget _buildAchievementItem(Achievement achievement, bool isUnlocked) {
     return Container(
       width: 70,
+      height: 80,
       margin: const EdgeInsets.only(right: 12),
       child: Column(
         children: [
@@ -525,16 +526,18 @@ class _ProgressDashboardScreenState extends State<ProgressDashboardScreen>
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            achievement.title,
-            style: TextStyle(
-              fontSize: 10,
-              color: isUnlocked ? Colors.black87 : Colors.grey[500],
-              fontWeight: isUnlocked ? FontWeight.w500 : FontWeight.normal,
+          Expanded(
+            child: Text(
+              achievement.title,
+              style: TextStyle(
+                fontSize: 10,
+                color: isUnlocked ? Colors.black87 : Colors.grey[500],
+                fontWeight: isUnlocked ? FontWeight.w500 : FontWeight.normal,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

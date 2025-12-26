@@ -70,16 +70,34 @@ class _QuizPlayScreenState extends State<QuizPlayScreen> {
         correctCount++;
       }
     }
-    
+
     double score = (questions.isNotEmpty) ? (correctCount / questions.length) * 100 : 0;
-    
+
+    // Prepare questions with user answers and correct answers for review
+    final questionsWithAnswers = questions.asMap().entries.map((entry) {
+      final index = entry.key;
+      final question = entry.value;
+      return {
+        'number': index + 1,
+        'question': question['pertanyaan'],
+        'options': question['opsi'],
+        'correctAnswer': question['jawaban'],
+        'userAnswer': userAnswers[index],
+      };
+    }).toList();
+
     Navigator.pushReplacementNamed(
-      context, 
-      AppRoutes.quizResult, 
+      context,
+      AppRoutes.quizResult,
       arguments: {
         'score': score.round(),
         'correct': correctCount,
         'total': questions.length,
+        'questions': questionsWithAnswers,
+        'title': quizData['title'] ?? 'Quiz',
+        'duration': _remainingTime,
+        'courseId': quizData['courseId'],
+        'materialId': quizData['materialId'],
       },
     );
   }

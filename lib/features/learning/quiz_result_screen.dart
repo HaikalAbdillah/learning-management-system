@@ -1,19 +1,73 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
+import '../../services/progress_service.dart';
 
-class QuizResultScreen extends StatelessWidget {
+class QuizResultScreen extends StatefulWidget {
   const QuizResultScreen({super.key});
+
+  @override
+  State<QuizResultScreen> createState() => _QuizResultScreenState();
+}
+
+class _QuizResultScreenState extends State<QuizResultScreen> {
+  bool _scoreRecorded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _recordQuizScoreIfNeeded();
+  }
+
+  Future<void> _recordQuizScoreIfNeeded() async {
+    if (_scoreRecorded) return;
+
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final Map<String, dynamic> resultData = (args is Map<String, dynamic>)
+        ? args
+        : {};
+
+    final int score = resultData['score'] ?? 0;
+    final String title = resultData['title'] ?? 'Quiz';
+    final String? courseId = resultData['courseId'];
+    final String? materialId = resultData['materialId'];
+
+    // Generate a quiz ID from title (in a real app, this would come from the quiz data)
+    final quizId = title.toLowerCase().replaceAll(' ', '_');
+
+    try {
+      await ProgressService().recordQuizScore(quizId, score / 100.0);
+
+      // Mark the quiz material as completed with score in metadata
+      if (courseId != null && materialId != null) {
+        await ProgressService().markMaterialAsCompleted(
+          courseId,
+          materialId,
+          metadata: {'score': score / 100.0},
+        );
+      }
+
+      _scoreRecorded = true;
+    } catch (e) {
+      // Log error but don't show to user
+      debugPrint('Error recording quiz score: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments;
-    final Map<String, dynamic> resultData = (args is Map<String, dynamic>) ? args : {};
-    
+    final Map<String, dynamic> resultData = (args is Map<String, dynamic>)
+        ? args
+        : {};
+
     final int score = resultData['score'] ?? 0;
     final int correct = resultData['correct'] ?? 0;
     final int total = resultData['total'] ?? 0;
-    
+    final List questions = resultData['questions'] ?? [];
+    final String title = resultData['title'] ?? 'Quiz';
+    final int duration = resultData['duration'] ?? 0;
+
     final bool isPassed = score >= 70;
 
     return Scaffold(
@@ -67,7 +121,7 @@ class QuizResultScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 40),
-            
+
             Text(
               isPassed ? 'Luar Biasa!' : 'Tetap Semangat!',
               style: const TextStyle(
@@ -78,14 +132,14 @@ class QuizResultScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              isPassed 
-                ? 'Anda berhasil menyelesaikan kuis dengan baik.'
-                : 'Coba lagi untuk mendapatkan hasil yang lebih baik.',
+              isPassed
+                  ? 'Anda berhasil menyelesaikan kuis dengan baik.'
+                  : 'Coba lagi untuk mendapatkan hasil yang lebih baik.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 32),
-            
+
             // Detail box
             Container(
               padding: const EdgeInsets.all(20),
@@ -103,32 +157,63 @@ class QuizResultScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const Spacer(),
-            
-            // Back to Home Button
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.quizReview,
+                        arguments: {
+                          'questions': questions,
+                          'title': title,
+                          'duration': duration,
+                          'totalQuestion': total,
+                        },
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Review Quiz'),
                   ),
                 ),
-                child: const Text(
-                  'Kembali ke Beranda',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.home,
+                        (route) => false,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Kembali ke Beranda',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
@@ -138,19 +223,17 @@ class QuizResultScreen extends StatelessWidget {
 
   Widget _buildResultDetail(String label, String value, Color color) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
+        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+        const SizedBox(height: 4),
         Text(
           value,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: color,
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
         ),
       ],
     );

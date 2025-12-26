@@ -289,7 +289,15 @@ class ProgressService {
   Future<List<Achievement>> getUserAchievements() async {
     await _ensureInitialized();
     final achievementsJson = _prefs!.getString(_achievementsKey);
-    if (achievementsJson == null) return [];
+    if (achievementsJson == null) {
+      // Initialize with default achievements
+      final defaultAchievements = AchievementTemplates.all;
+      final achievementsJson = json.encode(
+        defaultAchievements.map((a) => a.toJson()).toList(),
+      );
+      await _prefs!.setString(_achievementsKey, achievementsJson);
+      return defaultAchievements;
+    }
 
     try {
       final List<dynamic> achievementsList = json.decode(achievementsJson);
@@ -298,7 +306,7 @@ class ProgressService {
           .toList();
     } catch (e) {
       _logger.severe('Error loading achievements: $e');
-      return [];
+      return AchievementTemplates.all;
     }
   }
 
@@ -372,7 +380,6 @@ class ProgressService {
 
   Future<Map<String, dynamic>> getProgressSummary() async {
     final allProgress = await getAllCourseProgress();
-    final analytics = await getLearningAnalytics();
     final achievements = await getUserAchievements();
 
     final totalCourses = allProgress.length;
@@ -388,6 +395,32 @@ class ProgressService {
       (sum, cp) => sum + cp.completedMaterials,
     );
 
+    // Calculate total study time from course progress
+    final totalStudyTime = allProgress.fold<Duration>(
+      Duration.zero,
+      (sum, cp) => sum + cp.totalTimeSpent,
+    );
+
+    // Calculate average quiz score from completed quiz materials
+    final quizScores = <double>[];
+    for (final cp in allProgress) {
+      for (final mp in cp.materials) {
+        if (mp.type == MaterialType.quiz &&
+            mp.isCompleted &&
+            mp.metadata != null) {
+          final score = mp.metadata!['score'];
+          if (score is double) {
+            quizScores.add(score);
+          } else if (score is int) {
+            quizScores.add(score.toDouble());
+          }
+        }
+      }
+    }
+    final averageQuizScore = quizScores.isEmpty
+        ? 0.0
+        : quizScores.reduce((a, b) => a + b) / quizScores.length;
+
     return {
       'totalCourses': totalCourses,
       'completedCourses': completedCourses,
@@ -396,8 +429,8 @@ class ProgressService {
       'overallProgress': totalMaterials > 0
           ? completedMaterials / totalMaterials
           : 0.0,
-      'totalStudyTime': analytics.totalStudyTime,
-      'averageQuizScore': analytics.averageQuizScore,
+      'totalStudyTime': totalStudyTime,
+      'averageQuizScore': averageQuizScore,
       'unlockedAchievements': achievements.where((a) => a.isUnlocked).length,
       'totalAchievements': achievements.length,
     };

@@ -11,6 +11,7 @@ import '../features/learning/quiz_screen.dart';
 import '../features/learning/quiz_detail_screen.dart';
 import '../features/learning/quiz_play_screen.dart';
 import '../features/learning/quiz_result_screen.dart';
+import '../features/learning/quiz_review_screen.dart';
 import '../features/home/announcement_screen.dart';
 import '../features/home/announcement_list_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -37,6 +38,7 @@ class AppRoutes {
   static const String quizDetail = '/quiz-detail';
   static const String quizPlay = '/quiz-play';
   static const String quizResult = '/quiz-result';
+  static const String quizReview = '/quiz-review';
   static const String announcementDetail = '/announcement-detail';
   static const String announcementList = '/announcement-list';
   static const String profile = '/profile';
@@ -64,6 +66,7 @@ class AppRoutes {
     quizDetail: (context) => const QuizDetailScreen(),
     quizPlay: (context) => const QuizPlayScreen(),
     quizResult: (context) => const QuizResultScreen(),
+    quizReview: (context) => const QuizReviewScreen(),
     announcementDetail: (context) => const AnnouncementScreen(),
     announcementList: (context) => const AnnouncementListScreen(),
     profile: (context) => const ProfileScreen(),
