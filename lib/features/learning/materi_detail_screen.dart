@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
+import '../../core/utils/string_utils.dart';
+import '../../models/materi.dart';
 import 'materi_content/ui_design_content.dart';
 import 'materi_content/mobile_programming_content.dart';
 import 'materi_content/web_programming_content.dart';
@@ -21,7 +23,6 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-
   @override
   void initState() {
     super.initState();
@@ -36,7 +37,12 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final materiData = widget.materiData;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final Map<String, dynamic>? materiData =
+        widget.materiData ??
+        ((args is Map<String, dynamic>)
+            ? (args.containsKey('materi') ? args['materi'] : args)
+            : null);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -47,7 +53,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          materiData?['title'] ?? 'Detail Materi',
+          safeString(materiData?['title'], 'Detail Materi'),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -58,8 +64,8 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.black,
-          indicatorWeight: 1,
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),
@@ -77,8 +83,15 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
   }
 
   Widget _buildLampiranTab() {
-    final materiData = widget.materiData;
-    final List<dynamic> lampiranList = materiData?['lampiran'] ?? [];
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final Map<String, dynamic>? materiData =
+        widget.materiData ??
+        ((args is Map<String, dynamic>)
+            ? (args.containsKey('materi') ? args['materi'] : args)
+            : null);
+
+    // Convert to Materi model
+    final materi = materiData != null ? Materi.fromJson(materiData) : null;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -90,53 +103,24 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           const SizedBox(height: 20),
 
           // Lampiran Materi
-          if (lampiranList.isNotEmpty) ...[
+          if (materi != null && materi.lampiran.isNotEmpty) ...[
             Text(
               'Lampiran Materi',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[800],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             // List Lampiran
-            ...lampiranList.map((lampiran) {
-              IconData icon;
-              String type = lampiran['type'].toString().toLowerCase();
-
-              if (type == 'pdf' || type == 'ppt') {
-                icon = Icons.picture_as_pdf;
-              } else if (type == 'video') {
-                icon = Icons.play_circle_fill;
-              } else if (type == 'zoom') {
-                icon = Icons.video_call;
-              } else if (type == 'slide') {
-                icon = Icons.slideshow;
-              } else {
-                icon = Icons.link;
-              }
-
-              bool isVideo = type == 'video';
-              bool hasUrl = lampiran['url'] != null &&
-                  lampiran['url'].toString().isNotEmpty;
-
-              if (isVideo && !hasUrl) {
-                return const SizedBox.shrink();
-              }
-
-              return _buildLampiranItem(
-                icon: icon,
-                title: lampiran['title'] ?? 'Lampiran',
-                subtitle: lampiran['path'] ?? lampiran['url'] ?? '',
-                type: type.toUpperCase(),
-                lampiranData: lampiran,
-              );
+            ...materi.lampiran.map((lampiran) {
+              return _buildLampiranItem(lampiran);
             }),
           ] else ...[
             _buildEmptyState(
-              'Belum ada lampiran',
-              'Materi ini belum memiliki lampiran document',
+              'Belum ada materi pada pertemuan ini',
+              'Lampiran materi akan muncul di sini ketika sudah tersedia',
             ),
           ],
         ],
@@ -145,6 +129,13 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
   }
 
   Widget _buildTugasTab() {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final Map<String, dynamic>? materiData =
+        widget.materiData ??
+        ((args is Map<String, dynamic>)
+            ? (args.containsKey('materi') ? args['materi'] : args)
+            : null);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -159,9 +150,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
               Navigator.pushNamed(
                 context,
                 AppRoutes.tugas,
-                arguments: {
-                  'materi': widget.materiData,
-                },
+                arguments: {'materi': materiData ?? {}},
               );
             },
           ),
@@ -175,9 +164,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
               Navigator.pushNamed(
                 context,
                 AppRoutes.quiz,
-                arguments: {
-                  'materi': widget.materiData,
-                },
+                arguments: {'materi': materiData ?? {}},
               );
             },
           ),
@@ -228,7 +215,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        title,
+                        safeString(title, 'Tugas/Kuis'),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -237,11 +224,8 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
+                        safeString(subtitle, '-'),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -255,106 +239,114 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     );
   }
 
-  Widget _buildLampiranItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String type,
-    Map<String, dynamic>? lampiranData,
-  }) {
+  Widget _buildLampiranItem(LampiranMateri lampiran) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: lampiran.isAvailable ? Colors.white : Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
+          if (lampiran.isAvailable)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
         ],
+        border: lampiran.isAvailable
+            ? null
+            : Border.all(color: Colors.grey[200]!),
       ),
-      child: ListTile(
-        leading: Icon(icon, color: AppTheme.primaryColor),
-        title: Text(
-          title,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(
-          subtitle,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            type,
-            style: TextStyle(
-              fontSize: 10,
-              color: AppTheme.primaryColor,
-              fontWeight: FontWeight.bold,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: lampiran.isAvailable
+              ? () => _handleLampiranTap(lampiran)
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: lampiran.isAvailable
+                        ? _getLampiranColor(
+                            lampiran.type,
+                          ).withValues(alpha: 0.1)
+                        : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    lampiran.getIcon(),
+                    color: lampiran.isAvailable
+                        ? _getLampiranColor(lampiran.type)
+                        : Colors.grey[400],
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        lampiran.title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: lampiran.isAvailable
+                              ? Colors.black87
+                              : Colors.grey[500],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        lampiran.isAvailable
+                            ? _getLampiranDescription(lampiran)
+                            : 'Materi belum tersedia',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: lampiran.isAvailable
+                              ? Colors.grey[600]
+                              : Colors.grey[400],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: lampiran.isAvailable
+                        ? _getLampiranColor(
+                            lampiran.type,
+                          ).withValues(alpha: 0.1)
+                        : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    lampiran.getTypeLabel(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: lampiran.isAvailable
+                          ? _getLampiranColor(lampiran.type)
+                          : Colors.grey[500],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        onTap: () {
-          if (lampiranData != null) {
-            final type = lampiranData['type'].toString().toLowerCase();
-            switch (type) {
-              case 'pdf':
-              case 'ppt':
-                if (lampiranData['slides'] != null) {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.slideViewer,
-                    arguments: lampiranData,
-                  );
-                } else {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.documentViewer,
-                    arguments: lampiranData,
-                  );
-                }
-                break;
-              case 'video':
-                if (lampiranData['url'] != null &&
-                    lampiranData['url'].toString().isNotEmpty) {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.videoPlayer,
-                    arguments: lampiranData,
-                  );
-                }
-                break;
-              case 'zoom':
-                if (lampiranData['url'] != null) {
-                  launchUrl(Uri.parse(lampiranData['url']));
-                }
-                break;
-              case 'slide':
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.slideViewer,
-                  arguments: lampiranData,
-                );
-                break;
-              default:
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Membuka ${lampiranData['title']}')),
-                );
-            }
-          }
-        },
       ),
     );
   }
-
 
   Widget _buildDynamicContent(Map<String, dynamic>? materiData) {
     if (materiData == null) return const SizedBox();
@@ -397,6 +389,100 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
     );
   }
 
+  void _handleLampiranTap(LampiranMateri lampiran) {
+    switch (lampiran.type) {
+      case 'pdf':
+      case 'ppt':
+        // Navigate to document viewer
+        Navigator.pushNamed(
+          context,
+          AppRoutes.documentViewer,
+          arguments: {
+            'title': lampiran.title,
+            'path': lampiran.source,
+            'type': lampiran.type,
+          },
+        );
+        break;
+      case 'slide':
+        // Navigate to slide viewer
+        Navigator.pushNamed(
+          context,
+          AppRoutes.slideViewer,
+          arguments: {
+            'title': lampiran.title,
+            'path': lampiran.source,
+            'slides': lampiran.source == 'assets/materi/cyber_security'
+                ? [
+                    'pertemuan pertama cyber_page-0001.jpg',
+                    'pertemuan pertama cyber_page-0002.jpg',
+                    'pertemuan pertama cyber_page-0003.jpg',
+                    'pertemuan pertama cyber_page-0004.jpg',
+                    'pertemuan pertama cyber_page-0005.jpg',
+                    'pertemuan pertama cyber_page-0006.jpg',
+                    'pertemuan pertama cyber_page-0007.jpg',
+                  ]
+                : [],
+          },
+        );
+        break;
+      case 'video':
+        // Navigate to video player
+        Navigator.pushNamed(
+          context,
+          AppRoutes.videoPlayer,
+          arguments: {'title': lampiran.title, 'url': lampiran.source},
+        );
+        break;
+      case 'zoom':
+        // Open in external browser
+        if (lampiran.source.isNotEmpty) {
+          launchUrl(
+            Uri.parse(lampiran.source),
+            mode: LaunchMode.externalApplication,
+          );
+        } else {
+          // Removed: ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(content: Text('Link Zoom tidak tersedia')),
+          // );
+        }
+        break;
+      default:
+      // Removed: ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Membuka ${lampiran.title}')),
+      // );
+    }
+  }
+
+  Color _getLampiranColor(String type) {
+    switch (type) {
+      case 'pdf':
+      case 'ppt':
+        return Colors.red;
+      case 'video':
+        return Colors.blue;
+      case 'zoom':
+        return Colors.purple;
+      default:
+        return AppTheme.primaryColor;
+    }
+  }
+
+  String _getLampiranDescription(LampiranMateri lampiran) {
+    switch (lampiran.type) {
+      case 'pdf':
+      case 'ppt':
+      case 'slide':
+        return 'Buka dokumen ${lampiran.type.toUpperCase()}';
+      case 'video':
+        return 'Putar video tutorial';
+      case 'zoom':
+        return 'Bergabung ke sesi Zoom';
+      default:
+        return 'Buka lampiran';
+    }
+  }
+
   Widget _buildEmptyState(String title, String subtitle) {
     return Center(
       child: Column(
@@ -405,7 +491,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           Icon(Icons.inbox_outlined, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            title,
+            safeString(title, 'Pemberitahuan'),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -414,7 +500,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            subtitle,
+            safeString(subtitle, '-'),
             style: TextStyle(fontSize: 14, color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),

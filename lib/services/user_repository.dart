@@ -1,4 +1,8 @@
+import '../models/user.dart';
+
 class UserRepository {
+  static User? currentUser;
+
   static Map<String, dynamic> user = {
     'name': 'Haikal Abdillah',
     'email': 'mahasiswa@kampus.ac.id',

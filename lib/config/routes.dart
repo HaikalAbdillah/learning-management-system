@@ -10,6 +10,7 @@ import '../features/courses/lesson_screen.dart';
 import '../features/learning/quiz_screen.dart';
 import '../features/learning/quiz_detail_screen.dart';
 import '../features/learning/quiz_play_screen.dart';
+import '../features/learning/quiz_result_screen.dart';
 import '../features/home/announcement_screen.dart';
 import '../features/home/announcement_list_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -19,11 +20,15 @@ import '../features/learning/video_player_screen.dart';
 import '../features/learning/browser_screen.dart';
 import '../features/learning/slide_viewer_screen.dart';
 import '../features/learning/tugas_screen.dart';
+import '../features/learning/upload_assignment_screen.dart';
+import '../features/learning/materi_screen.dart';
+import '../features/learning/progress_dashboard_screen.dart';
+import '../features/home/material_search_screen.dart';
 
 class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
-  static const String home = '/home'; // Main container with BottomNav
+  static const String home = '/home';
   static const String help = '/help';
   static const String classDetail = '/class-detail';
   static const String materiDetail = '/materi-detail';
@@ -42,88 +47,52 @@ class AppRoutes {
   static const String browser = '/browser';
   static const String slideViewer = '/slide-viewer';
   static const String tugas = '/tugas';
+  static const String uploadAssignment = '/upload-assignment';
+  static const String materi = '/materi';
+  static const String progressDashboard = '/progress-dashboard';
+  static const String materialSearch = '/material-search';
+
+  static final Map<String, WidgetBuilder> routes = {
+    splash: (context) => const SplashScreen(),
+    login: (context) => const LoginScreen(),
+    home: (context) => const MainNavigation(),
+    help: (context) => const HelpScreen(),
+    classDetail: (context) => const ClassDetailScreen(),
+    materiDetail: (context) => const MateriDetailScreen(),
+    lesson: (context) => const LessonScreen(),
+    quiz: (context) => const QuizScreen(),
+    quizDetail: (context) => const QuizDetailScreen(),
+    quizPlay: (context) => const QuizPlayScreen(),
+    quizResult: (context) => const QuizResultScreen(),
+    announcementDetail: (context) => const AnnouncementScreen(),
+    announcementList: (context) => const AnnouncementListScreen(),
+    profile: (context) => const ProfileScreen(),
+    editProfile: (context) => const EditProfileScreen(),
+    assignmentDetail: (context) => const AssignmentScreen(),
+    documentViewer: (context) => const DocumentViewerScreen(),
+    videoPlayer: (context) => const VideoPlayerScreen(),
+    browser: (context) => const BrowserScreen(),
+    slideViewer: (context) => const SlideViewerScreen(),
+    tugas: (context) => const TugasScreen(),
+    uploadAssignment: (context) => const UploadAssignmentScreen(),
+    materi: (context) => const MateriScreen(),
+    progressDashboard: (context) => const ProgressDashboardScreen(),
+    materialSearch: (context) => const MaterialSearchScreen(),
+  };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      case tugas:
-        return MaterialPageRoute(
-          builder: (_) => const TugasScreen(),
-        );
-      case slideViewer:
-        return MaterialPageRoute(
-          builder: (_) => const SlideViewerScreen(),
-          settings: settings,
-        );
-      case browser:
-        return MaterialPageRoute(
-          builder: (_) => const BrowserScreen(),
-          settings: settings,
-        );
-      case videoPlayer:
-        return MaterialPageRoute(
-          builder: (_) => const VideoPlayerScreen(),
-          settings: settings,
-        );
-      case documentViewer:
-        return MaterialPageRoute(
-          builder: (_) => const DocumentViewerScreen(),
-          settings: settings,
-        );
-      case splash:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
-      case login:
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
-      case help:
-        return MaterialPageRoute(builder: (_) => const HelpScreen());
-      case classDetail:
-        final classId = settings.arguments as int? ?? 1; // Default to 1 if null
-        return MaterialPageRoute(
-          builder: (_) => ClassDetailScreen(classId: classId),
-        );
-      case materiDetail:
-        final materiData = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (_) => MateriDetailScreen(materiData: materiData),
-        );
-      case home:
-        return MaterialPageRoute(builder: (_) => const MainNavigation());
-      case lesson:
-        return MaterialPageRoute(builder: (_) => const LessonScreen());
-      case quiz:
-        return MaterialPageRoute(
-          builder: (_) => const QuizScreen(),
-        );
-      case quizDetail:
-        return MaterialPageRoute(builder: (_) => const QuizDetailScreen());
-      case quizPlay:
-        final quizData = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (_) => QuizPlayScreen(quizData: quizData),
-        );
-      case quizResult:
-        final args = settings.arguments as Map<String, dynamic>?;
-        final score = args?['score'] ?? 0;
-        return MaterialPageRoute(
-          builder: (_) => QuizResultScreen(score: score),
-        );
-      case announcementDetail:
-        return MaterialPageRoute(builder: (_) => const AnnouncementScreen());
-      case announcementList:
-        return MaterialPageRoute(
-          builder: (_) => const AnnouncementListScreen(),
-        );
-      case assignmentDetail:
-        return MaterialPageRoute(builder: (_) => const AssignmentScreen());
-      case profile:
-        return MaterialPageRoute(builder: (_) => const ProfileScreen());
-      case editProfile:
-        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
-      default:
-        return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(child: Text('No route defined for ${settings.name}')),
-          ),
-        );
+    final WidgetBuilder? builder = routes[settings.name];
+    if (builder != null) {
+      return MaterialPageRoute(
+        builder: builder,
+        settings: settings,
+      );
     }
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        body: Center(child: Text('No route defined for ${settings.name}')),
+      ),
+    );
   }
 }
+

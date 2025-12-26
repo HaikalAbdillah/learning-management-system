@@ -4,6 +4,7 @@ import '../../config/routes.dart';
 import '../../core/utils/validators.dart';
 import '../../core/constants/assets.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_repository.dart';
 import 'pentagon_painter.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -44,16 +45,10 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
 
-      if (mounted) {
-        // Show success message briefly
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Welcome back, ${user.name}!'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 1),
-          ),
-        );
+      // Store the logged-in user
+      UserRepository.currentUser = user;
 
+      if (mounted) {
         // Navigate to home screen
         await Future.delayed(const Duration(milliseconds: 500));
         if (mounted) {

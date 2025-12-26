@@ -53,9 +53,19 @@ dependencies:
   # Webview
   webview_flutter: ^4.2.2
 
+  # Shared Preferences
+  shared_preferences: ^2.2.2
+
+  # Logging framework
+  logging: ^1.2.0
+
+  # File Picker
+  file_picker: ^8.0.0+1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -79,8 +89,7 @@ flutter:
   assets:
     - assets/images/
     - assets/materi/
-    - assets/materi/cyber/
-    - assets/materi/cyber/pertemuan1/
+    - assets/materi/cyber_security/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

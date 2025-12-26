@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/string_utils.dart';
 
 class CyberSecurityContent extends StatelessWidget {
   final Map<String, dynamic>? materiData;
@@ -12,11 +13,11 @@ class CyberSecurityContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle(materiData?['title'] ?? 'Cyber Security Overview'),
+          _buildSectionTitle(safeString(materiData?['title'], 'Cyber Security Overview')),
           const SizedBox(height: 10),
           Text(
-            materiData?['description'] ?? 
-            'Keamanan siber adalah praktik melindungi sistem, jaringan, dan program dari serangan digital.',
+            safeString(materiData?['description'], 
+            'Keamanan siber adalah praktik melindungi sistem, jaringan, dan program dari serangan digital.'),
             style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.5),
           ),
           const SizedBox(height: 20),

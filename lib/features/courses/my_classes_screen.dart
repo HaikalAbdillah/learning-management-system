@@ -59,15 +59,20 @@ class MyClassesScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: ClassRepository.classes.map((cls) {
+          final materi = cls['materi'] as List;
+          final attendedCount = materi.where((m) => m['attended'] == true).length;
+          final progress = materi.isEmpty ? 0.0 : attendedCount / materi.length;
+          
           return _buildVerticalCourseCard(
             context,
             id: cls['id'],
             title: cls['title'],
-            instructor: 'Instructor', // Default
-            progress: 0.0, // Default
+            instructor: cls['instructor'] ?? 'Instructor',
+            progress: progress,
+            rating: cls['rating'] ?? 0.0,
             color: _getClassColor(
               cls['type'],
-            ).withValues(alpha: 0.3), // Lighter bg
+            ).withValues(alpha: 0.3),
           );
         }).toList(),
       ),
@@ -80,6 +85,7 @@ class MyClassesScreen extends StatelessWidget {
     required String title,
     required String instructor,
     required double progress,
+    required double rating,
     required Color color,
   }) {
     return GestureDetector(
@@ -129,10 +135,21 @@ class MyClassesScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      instructor,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    Row(
+                      children: [
+                        Icon(Icons.person_outline, size: 12, color: Colors.grey[600]),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            instructor,
+                            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 8),
+                    _buildStarRating(rating),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -162,6 +179,20 @@ class MyClassesScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStarRating(double rating) {
+    return Row(
+      children: List.generate(5, (index) {
+        if (index < rating.floor()) {
+          return const Icon(Icons.star, size: 14, color: Colors.amber);
+        } else if (index < rating && rating - index >= 0.5) {
+          return const Icon(Icons.star_half, size: 14, color: Colors.amber);
+        } else {
+          return Icon(Icons.star_border, size: 14, color: Colors.grey[400]);
+        }
+      }),
     );
   }
 }

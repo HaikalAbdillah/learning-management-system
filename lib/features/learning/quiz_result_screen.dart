@@ -1,130 +1,158 @@
 import 'package:flutter/material.dart';
+import '../../config/app_theme.dart';
+import '../../config/routes.dart';
 
 class QuizResultScreen extends StatelessWidget {
   const QuizResultScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final int totalQuestions = 3;
-    final int correctAnswers = 2;
-    final double scorePercentage = (correctAnswers / totalQuestions) * 100;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final Map<String, dynamic> resultData = (args is Map<String, dynamic>) ? args : {};
+    
+    final int score = resultData['score'] ?? 0;
+    final int correct = resultData['correct'] ?? 0;
+    final int total = resultData['total'] ?? 0;
+    
+    final bool isPassed = score >= 70;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Quiz Result'),
-        backgroundColor: const Color(0xFFDC143C), // Red color
+        automaticallyImplyLeading: false,
+        backgroundColor: AppTheme.primaryColor,
+        title: const Text(
+          'Hasil Kuis',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Score circle
+            // Score visualization
             Stack(
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  width: 200,
-                  height: 200,
+                  width: 180,
+                  height: 180,
                   child: CircularProgressIndicator(
-                    value: scorePercentage / 100,
-                    strokeWidth: 15,
-                    color: scorePercentage >= 70
-                        ? Colors.green
-                        : const Color(0xFFDC143C),
-                    backgroundColor: Colors.grey[300],
+                    value: score / 100,
+                    strokeWidth: 12,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isPassed ? Colors.green : AppTheme.primaryColor,
+                    ),
                   ),
                 ),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${scorePercentage.round()}%',
-                      style: const TextStyle(
+                      '$score',
+                      style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
+                        color: isPassed ? Colors.green : AppTheme.primaryColor,
                       ),
                     ),
-                    Text(
-                      '$correctAnswers/$totalQuestions',
-                      style: const TextStyle(fontSize: 18, color: Colors.grey),
+                    const Text(
+                      'Skor',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 40),
-
-            // Result message
+            
             Text(
-              scorePercentage >= 70 ? 'Congratulations!' : 'Keep Practicing!',
-              style: TextStyle(
+              isPassed ? 'Luar Biasa!' : 'Tetap Semangat!',
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: scorePercentage >= 70
-                    ? Colors.green
-                    : const Color(0xFFDC143C),
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
-              scorePercentage >= 70
-                  ? 'You passed the quiz successfully.'
-                  : 'You need to review the material and try again.',
+              isPassed 
+                ? 'Anda berhasil menyelesaikan kuis dengan baik.'
+                : 'Coba lagi untuk mendapatkan hasil yang lebih baik.',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
-            const SizedBox(height: 40),
-
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      side: BorderSide(color: const Color(0xFFDC143C)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Review Answers',
-                      style: TextStyle(fontSize: 16, color: Color(0xFFDC143C)),
-                    ),
+            const SizedBox(height: 32),
+            
+            // Detail box
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildResultDetail('Benar', '$correct', Colors.green),
+                  _buildResultDetail('Salah', '${total - correct}', Colors.red),
+                  _buildResultDetail('Total', '$total', Colors.blue),
+                ],
+              ),
+            ),
+            
+            const Spacer(),
+            
+            // Back to Home Button
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (route) => false);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/home',
-                        (route) => false,
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      backgroundColor: const Color(0xFFDC143C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Back to Home',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
+                child: const Text(
+                  'Kembali ke Beranda',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildResultDetail(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        ),
+      ],
     );
   }
 }

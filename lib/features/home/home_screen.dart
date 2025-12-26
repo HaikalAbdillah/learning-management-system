@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../../config/routes.dart';
 import '../../services/class_repository.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -34,17 +35,24 @@ class HomeScreen extends StatelessWidget {
           // Search Field
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: "Cari pelajaran...",
-                prefixIcon: const Icon(Icons.search),
-                fillColor: Colors.grey[200],
-                filled: true,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.materialSearch);
+              },
+              child: AbsorbPointer(
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: "Cari pelajaran...",
+                    prefixIcon: const Icon(Icons.search),
+                    fillColor: Colors.grey[200],
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
               ),
             ),
           ),
@@ -112,22 +120,29 @@ class HomeScreen extends StatelessWidget {
               itemCount: ClassRepository.classes.length,
               itemBuilder: (context, index) {
                 final cls = ClassRepository.classes[index];
+                final materi = cls['materi'] as List;
+                final attendedCount = materi
+                    .where((m) => m['attended'] == true)
+                    .length;
+                final progress = materi.isEmpty
+                    ? 0.0
+                    : attendedCount / materi.length;
+
                 return GestureDetector(
                   onTap: () {
-                    // Pass ID to detail screen
                     Navigator.pushNamed(
                       context,
-                      '/class-detail',
+                      AppRoutes.classDetail,
                       arguments: cls['id'],
                     );
                   },
                   child: _buildProgressItem(
                     color: _getClassColor(cls['type']),
                     title: cls['title'],
-                    code: "", // Default
-                    progress: 0.0, // Default
-                    iconText: cls['title'][0], // Simple icon logic
-                    isImage: false, // For now simple
+                    code: cls['code'] ?? "MK-${index + 101}",
+                    progress: progress,
+                    iconText: cls['title'][0],
+                    isImage: false,
                   ),
                 );
               },
@@ -255,32 +270,60 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
-          InkWell(
-            onTap: () {
-              Navigator.pushNamed(context, '/profile');
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.red[900],
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: Row(
-                children: const [
-                  Text(
-                    "MAHASISWA",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
+          Row(
+            children: [
+              // Progress Dashboard Button
+              InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.progressDashboard);
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white24),
                   ),
-                  SizedBox(width: 8),
-                  Icon(Icons.person, color: Colors.white, size: 16),
-                ],
+                  child: const Icon(
+                    Icons.bar_chart,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
               ),
-            ),
+              // Profile Button
+              InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, '/profile');
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red[900],
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Row(
+                    children: const [
+                      Text(
+                        "MAHASISWA",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.person, color: Colors.white, size: 16),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -288,9 +331,48 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildUpcomingTaskCard(BuildContext context) {
+    // Find the first task that is not done across all classes
+    Map<String, dynamic>? upcomingTask;
+    String? courseTitle;
+
+    for (var cls in ClassRepository.classes) {
+      for (var mat in (cls['materi'] as List)) {
+        for (var task in (mat['tugas'] as List)) {
+          if (task['isDone'] == false) {
+            upcomingTask = task;
+            courseTitle = cls['title'];
+            break;
+          }
+        }
+        if (upcomingTask != null) break;
+      }
+      if (upcomingTask != null) break;
+    }
+
+    if (upcomingTask == null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.green[700],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Center(
+          child: Text(
+            "Semua tugas telah selesai! 🎉",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, '/assignment-detail');
+        Navigator.pushNamed(
+          context,
+          AppRoutes.assignmentDetail,
+          arguments: upcomingTask,
+        );
       },
       child: Container(
         width: double.infinity,
@@ -298,42 +380,75 @@ class HomeScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFB71C1C), // Deep Red
           borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "DESAIN ANTARMUKA & PENGALAMAN PENGGUNA",
-              style: TextStyle(
-                color: Colors.white,
+            Text(
+              courseTitle?.toUpperCase() ?? "COURSE",
+              style: const TextStyle(
+                color: Colors.white70,
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
+                fontSize: 10,
+                letterSpacing: 1.2,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              "Tugas 01 - UID Android Mobile Game",
-              style: TextStyle(color: Colors.white, fontSize: 14),
+            Text(
+              upcomingTask['title'] ?? "Tugas Baru",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Column(
-                children: const [
-                  Text(
-                    "Waktu Pengumpulan",
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Batas Waktu",
+                      style: TextStyle(color: Colors.white60, fontSize: 10),
+                    ),
+                    Text(
+                      upcomingTask['deadline'] ?? "-",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  Text(
-                    "Jumat 26 Februari, 23:59 WIB",
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    "KERJAKAN",
                     style: TextStyle(
                       color: Colors.white,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),

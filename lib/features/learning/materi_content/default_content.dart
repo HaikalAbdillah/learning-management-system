@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/string_utils.dart';
 
 class DefaultMateriContent extends StatelessWidget {
   final Map<String, dynamic>? materiData;
@@ -13,7 +14,7 @@ class DefaultMateriContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            materiData?['title'] ?? 'Judul Materi',
+            safeString(materiData?['title'], 'Judul Materi'),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -22,7 +23,7 @@ class DefaultMateriContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            materiData?['description'] ?? 'Deskripsi materi akan muncul di sini.',
+            safeString(materiData?['description'], 'Deskripsi materi akan muncul di sini.'),
             style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
           const SizedBox(height: 20),

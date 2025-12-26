@@ -47,9 +47,9 @@ class MobileProgrammingContent extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () {
                 // Action simulate
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Membuka Live Demo...')),
-                );
+                // Removed: ScaffoldMessenger.of(context).showSnackBar(
+                //   const SnackBar(content: Text('Membuka Live Demo...')),
+                // );
               },
               icon: const Icon(Icons.play_arrow),
               label: const Text('Lihat Contoh'),

@@ -1,65 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
 import '../../services/class_repository.dart';
+import '../../core/utils/string_utils.dart';
 
 enum ContentType { lesson, quiz, assignment }
 
 class ClassDetailScreen extends StatefulWidget {
-  final int classId;
-
-  const ClassDetailScreen({super.key, required this.classId});
+  const ClassDetailScreen({super.key});
 
   @override
   State<ClassDetailScreen> createState() => _ClassDetailScreenState();
 }
 
 class _ClassDetailScreenState extends State<ClassDetailScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
-
   late Map<String, dynamic> classData;
   List<Map<String, dynamic>> materiList = [];
+  bool isLoading = true;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
 
-    // Fetch data based on ID
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+  }
+
+  void _loadData() {
+    final classId = ModalRoute.of(context)?.settings.arguments as int? ?? 1;
+
     try {
-      classData = ClassRepository.classes.firstWhere(
-        (e) => e['id'] == widget.classId,
-      );
+      classData = ClassRepository.classes.firstWhere((e) => e['id'] == classId);
       materiList = List<Map<String, dynamic>>.from(classData['materi'] ?? []);
     } catch (e) {
-      // Fallback or error handling
       classData = {'title': 'Kelas Tidak Ditemukan'};
       materiList = [];
     }
+
+    setState(() {
+      isLoading = false;
+    });
+    _fadeController.forward();
   }
-
-
-  // InitState removed here as it is moved up
 
   @override
   void dispose() {
     _tabController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return _buildLoadingScreen();
+    }
+
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Background: abu-abu muda
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryColor, // AppBar warna merah
+        titleSpacing: 0,
+        backgroundColor: AppTheme.primaryColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          classData['title'] ?? "Course",
+          safeString(classData['title'], "Course"),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -70,148 +92,142 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.black, // Indikator garis hitam tipis
-          indicatorWeight: 1, // Tipis
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           tabs: const [
             Tab(text: "Materi"),
-            Tab(text: "Tugas Dan Kuis"),
+            Tab(text: "Tugas & Kuis"),
+            Tab(text: "Absensi"),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [_buildMateriTab(), _buildTugasTab()],
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: TabBarView(
+          controller: _tabController,
+          children: [_buildMateriTab(), _buildTugasTab(), _buildAbsensiTab()],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingScreen() {
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        backgroundColor: AppTheme.primaryColor,
+        title: const Text(
+          'Memuat Kelas...',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1976D2)),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Memuat detail kelas...',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildMateriTab() {
-    // materiList is now populated in initState
-
-    return materiList.isEmpty
-        ? _buildEmptyState(
-            'Belum ada materi tersedia',
-            'Materi akan muncul di sini ketika sudah tersedia',
-          )
-        : ListView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: materiList.length,
-            itemBuilder: (context, index) {
-              final materi = materiList[index];
-              final data = Map<String, dynamic>.from(materi);
-              data['classType'] = classData['type'];
-              return _buildContentCard(
-                badgeText: 'Pertemuan ${materi['id']}',
-                badgeColor: _getBadgeColor(classData['type']),
-                title: materi['title'],
-                description: materi['description'],
-                isCompleted: false, // Default to false
-                contentType: ContentType.lesson,
-                data: data,
-              );
-            },
-          );
-  }
-
-  Color _getBadgeColor(String? type) {
-    switch (type) {
-      case 'ui_ux':
-        return Colors.red;
-      case 'mobile_programming':
-        return Colors.blue;
-      case 'web_programming':
-        return Colors.purple;
-      case 'cyber_security':
-        return Colors.green;
-      default:
-        return Colors.grey;
+    if (materiList.isEmpty) {
+      return _buildEmptyState(
+        'Belum ada materi tersedia',
+        'Materi akan muncul di sini ketika sudah tersedia',
+      );
     }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: materiList.length,
+      itemBuilder: (context, index) {
+        final materi = materiList[index];
+        return _buildContentCard(
+          badgeText: 'Pertemuan ${materi['id']}',
+          badgeColor: _getBadgeColor(classData['type']),
+          title: safeString(materi['title'], 'Judul Materi'),
+          description: 'Klik untuk melihat materi pertemuan',
+          isCompleted: false,
+          contentType: ContentType.lesson,
+          data: materi,
+        );
+      },
+    );
   }
 
   Widget _buildTugasTab() {
-    // Collect all assignments and quizzes from all meetings
     final List<Map<String, dynamic>> aggregatedItems = [];
 
     for (var materi in materiList) {
       // Assignments
-      final List<dynamic> assignmentList = materi['tugas'] ?? [];
-      for (var tugas in assignmentList) {
+      final List<dynamic> assignments = materi['tugas'] ?? [];
+      for (var task in assignments) {
         aggregatedItems.add({
           'badgeText': 'Tugas',
           'badgeColor': Colors.blue,
-          'title': tugas['title'],
-          'description': 'Tenggat Waktu: ${tugas['deadline']}',
-          'done': tugas['isDone'],
+          'title': safeString(task['title'], 'Tugas'),
+          'description': 'Deadline: ${safeString(task['deadline'], '-')}',
+          'done': task['isDone'] ?? false,
           'contentType': ContentType.assignment,
-          'materi': materi,
+          'data': task,
         });
       }
 
-      // Quizzes
-      final List<dynamic> quizList = materi['kuis'] ?? [];
-      for (var quiz in quizList) {
+      // Quiz
+      final kuis = materi['kuis'];
+      if (kuis != null) {
         aggregatedItems.add({
           'badgeText': 'Quiz',
           'badgeColor': Colors.purple,
-          'title': quiz['title'],
-          'description': quiz['desc'] ?? 'Kerjakan kuis ini',
-          'done': quiz['isDone'] ?? false,
+          'title': safeString(kuis['title'], 'Kuis Pertemuan ${materi['id']}'),
+          'description':
+              '${kuis['totalSoal'] ?? 0} Soal • ${kuis['durasiMenit'] ?? 0} Menit',
+          'done': kuis['isDone'] ?? false,
           'contentType': ContentType.quiz,
-          'materi': materi,
+          'data': kuis,
         });
       }
     }
 
-    return aggregatedItems.isEmpty
-        ? _buildEmptyState(
-            'Tidak Ada Tugas Dan Kuis',
-            'Tugas dan kuis akan muncul di sini',
-          )
-        : ListView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: aggregatedItems.length,
-            itemBuilder: (context, index) {
-              final item = aggregatedItems[index];
-              return _buildContentCard(
-                badgeText: item['badgeText'],
-                badgeColor: item['badgeColor'],
-                title: item['title'],
-                description: item['description'],
-                isCompleted: item['done'],
-                isTask: item['contentType'] == ContentType.assignment,
-                contentType: item['contentType'],
-                data: item,
-              );
-            },
-          );
-  }
+    if (aggregatedItems.isEmpty) {
+      return _buildEmptyState(
+        'Tidak Ada Tugas Dan Kuis',
+        'Tugas dan kuis akan muncul di sini',
+      );
+    }
 
-  Widget _buildEmptyState(String title, String subtitle) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.inbox_outlined, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: aggregatedItems.length,
+      itemBuilder: (context, index) {
+        final item = aggregatedItems[index];
+        return _buildContentCard(
+          badgeText: item['badgeText'],
+          badgeColor: item['badgeColor'],
+          title: item['title'],
+          description: item['description'],
+          isCompleted: item['done'],
+          contentType: item['contentType'],
+          data: item['data'],
+        );
+      },
     );
   }
 
@@ -221,9 +237,8 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
     required String title,
     required String description,
     required bool isCompleted,
-    bool isTask = false,
     required ContentType contentType,
-    Map<String, dynamic>? data,
+    required Map<String, dynamic> data,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -242,17 +257,35 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () {
+          onTap: () async {
+            // Haptic feedback
+            HapticFeedback.lightImpact();
+
+            // Check if context is still valid
+            if (!mounted) return;
+
+            await Future.delayed(const Duration(milliseconds: 200));
+
+            // Check again after delay
+            if (!mounted) return;
+
             switch (contentType) {
               case ContentType.lesson:
-                // Navigate to Materi Detail with data
-                Navigator.pushNamed(context, '/materi-detail', arguments: data);
-                break;
-              case ContentType.quiz:
-                Navigator.pushNamed(context, AppRoutes.quiz, arguments: data);
+                Navigator.pushNamed(context, AppRoutes.materi, arguments: data);
                 break;
               case ContentType.assignment:
-                Navigator.pushNamed(context, AppRoutes.tugas, arguments: data);
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.assignmentDetail,
+                  arguments: data,
+                );
+                break;
+              case ContentType.quiz:
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.quizPlay,
+                  arguments: data,
+                );
                 break;
             }
           },
@@ -266,15 +299,15 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                        horizontal: 10,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: badgeColor,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        badgeText,
+                        badgeText.toUpperCase(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -298,13 +331,12 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isTask ? Colors.redAccent : Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -312,5 +344,139 @@ class _ClassDetailScreenState extends State<ClassDetailScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildEmptyState(String title, String subtitle) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inbox_outlined, size: 80, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAbsensiTab() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: materiList.length,
+      itemBuilder: (context, index) {
+        final meeting = materiList[index];
+        final bool isAttended = meeting['attended'] ?? false;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: (isAttended ? Colors.green : Colors.orange).withValues(
+                    alpha: 0.1,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isAttended
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
+                  color: isAttended ? Colors.green : Colors.orange,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pertemuan ${meeting['id']}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      isAttended ? 'Sudah Absen' : 'Belum Absen',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                onPressed: isAttended
+                    ? null
+                    : () {
+                        setState(() {
+                          materiList[index]['attended'] = true;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Absensi Pertemuan ${meeting['id']} berhasil',
+                            ),
+                          ),
+                        );
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isAttended
+                      ? Colors.grey
+                      : AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(isAttended ? 'Lengkap' : 'Hadir'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Color _getBadgeColor(String? type) {
+    switch (type) {
+      case 'ui_ux':
+        return Colors.red;
+      case 'mobile_programming':
+        return Colors.blue;
+      case 'web_programming':
+        return Colors.purple;
+      case 'cyber_security':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
   }
 }
