@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
 import '../../services/auth_service.dart';
-import '../../services/user_repository.dart';
 import '../../services/class_repository.dart';
+import '../../providers/user_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,37 +14,32 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Force rebuild when returning from edit
-  void _refresh() {
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
-    final user = UserRepository.user;
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Profil Saya', style: TextStyle(color: Colors.white)),
-        backgroundColor: AppTheme.primaryColor,
-        elevation: 0,
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          icon: const Icon(Icons.keyboard_backspace_sharp, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
-            onPressed: () async {
-              await Navigator.pushNamed(context, '/edit-profile');
-              _refresh(); // Refresh data on return
-            },
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, child) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: const Text('Profil Saya', style: TextStyle(color: Colors.white)),
+            backgroundColor: AppTheme.primaryColor,
+            elevation: 0,
+            centerTitle: true,
+            automaticallyImplyLeading: false,
+            leading: IconButton(
+              icon: const Icon(Icons.keyboard_backspace_sharp, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.white),
+                onPressed: () async {
+                  await Navigator.pushNamed(context, '/edit-profile');
+                  // No need to refresh, provider will handle updates automatically
+                },
+              ),
+            ],
           ),
-        ],
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -91,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              user['name'],
+                              userProvider.user.name,
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -111,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                (user['role'] as String).toUpperCase(),
+                                userProvider.user.role.toUpperCase(),
                                 style: const TextStyle(
                                   color: AppTheme.primaryColor,
                                   fontSize: 10,
@@ -121,7 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              user['email'],
+                              'mahasiswa@kampus.ac.id', // Static email for now
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -135,11 +131,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 16),
-                  _buildInfoRow("NIM", user['nim']),
+                  _buildInfoRow("NIM", "1301194000"),
                   const SizedBox(height: 12),
-                  _buildInfoRow("Jurusan", user['jurusan']),
+                  _buildInfoRow("Jurusan", "S1 Informatika"),
                   const SizedBox(height: 12),
-                  _buildInfoRow("Angkatan", user['angkatan']),
+                  _buildInfoRow("Angkatan", "2019"),
                 ],
               ),
             ),
@@ -210,6 +206,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+        );
+      },
     );
   }
 

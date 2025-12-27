@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
-import '../../services/user_repository.dart';
+import '../../providers/user_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -18,11 +19,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize with real data
-    final user = UserRepository.user;
-    _nameController.text = user['name'] ?? '';
-    _emailController.text = user['email'] ?? '';
-    _phoneController.text = user['phone'] ?? '';
+    // Initialize with data from provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      _nameController.text = userProvider.user.name;
+      _emailController.text = 'mahasiswa@kampus.ac.id'; // Static for now
+      _phoneController.text = '+62 812 3456 7890'; // Static for now
+    });
   }
 
   @override
@@ -35,11 +38,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _handleSave() {
     if (_formKey.currentState!.validate()) {
-      // Update repository
-      UserRepository.user['name'] = _nameController.text;
-      UserRepository.user['email'] = _emailController.text;
-      UserRepository.user['phone'] = _phoneController.text;
-      
+      // Update provider
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      userProvider.updateName(_nameController.text);
+
       Navigator.pop(context);
     }
   }

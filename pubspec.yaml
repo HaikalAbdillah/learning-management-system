@@ -38,6 +38,9 @@ dependencies:
   # For secure password hashing
   crypto: ^3.0.3
 
+  # State management
+  provider: ^6.1.2
+
   # Curved navigation bar package
   curved_navigation_bar: ^1.0.3
 

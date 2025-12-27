@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
 import '../../services/class_repository.dart';
+import '../../providers/user_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -239,95 +241,99 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
-      decoration: const BoxDecoration(
-        color: AppTheme.secondaryColor, // Darker red based on image
-        borderRadius: BorderRadius.only(
-          bottomRight: Radius.circular(
-            0,
-          ), // Removed curve to match image more closely or keep? Image doesn't show bottom clearly but likely straight or slight. adhering to previous style but with straight edges for "strip" look.
-          // Actually image shows top bar is standard rect.
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                'Halo,',
-                style: TextStyle(color: Colors.white, fontSize: 14),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'HAIKAL', // Real Name
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, child) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
+          decoration: const BoxDecoration(
+            color: AppTheme.secondaryColor, // Darker red based on image
+            borderRadius: BorderRadius.only(
+              bottomRight: Radius.circular(
+                0,
+              ), // Removed curve to match image more closely or keep? Image doesn't show bottom clearly but likely straight or slight. adhering to previous style but with straight edges for "strip" look.
+              // Actually image shows top bar is standard rect.
+            ),
           ),
-          Row(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Progress Dashboard Button
-              InkWell(
-                onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.progressDashboard);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white24),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Hai,',
+                    style: TextStyle(color: Colors.white, fontSize: 14),
                   ),
-                  child: const Icon(
-                    Icons.bar_chart,
-                    color: Colors.white,
-                    size: 20,
+                  const SizedBox(height: 4),
+                  Text(
+                    userProvider.user.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+                ],
               ),
-              // Profile Button
-              InkWell(
-                onTap: () {
-                  Navigator.pushNamed(context, '/profile');
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red[900],
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Row(
-                    children: const [
-                      Text(
-                        "MAHASISWA",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
+              Row(
+                children: [
+                  // Progress Dashboard Button
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.progressDashboard);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white24),
                       ),
-                      SizedBox(width: 8),
-                      Icon(Icons.person, color: Colors.white, size: 16),
-                    ],
+                      child: const Icon(
+                        Icons.bar_chart,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
                   ),
-                ),
+                  // Profile Button
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/profile');
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red[900],
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            userProvider.user.role.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.person, color: Colors.white, size: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
