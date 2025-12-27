@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
 import '../../core/constants/assets.dart';
+import '../../services/user_repository.dart';
 import 'pentagon_painter.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -17,7 +18,10 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
+      final route = UserRepository.currentUser != null
+          ? AppRoutes.home
+          : AppRoutes.login;
+      Navigator.pushReplacementNamed(context, route);
     });
   }
 
